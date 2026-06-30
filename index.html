@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Prompt Engineering · Interactive Showcase — Al-Shaab University</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070b16; --bg2:#0b1124; --panel:#101a35; --panel2:#0c1430; --line:#22304f;
+    --ink:#eaf0fb; --muted:#94a3c8; --brand:#6ea8fe; --brand2:#a78bfa; --accent:#22d3ee;
+    --good:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --radius:20px; --shadow:0 24px 60px -24px rgba(0,0,0,.8);
+  }
+  [data-theme="light"]{
+    --bg:#f5f7fc; --bg2:#eef2fb; --panel:#ffffff; --panel2:#f7f9ff; --line:#dde5f4;
+    --ink:#10182c; --muted:#566080; --shadow:0 18px 44px -22px rgba(40,70,140,.35);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--ink);line-height:1.6;
+    background:var(--bg);transition:background .4s,color .4s;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .display{font-family:'Space Grotesk',sans-serif}
+  .ar{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;text-align:right}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  code,.mono{font-family:'JetBrains Mono',monospace}
+  a{color:inherit}
+
+  .bgfx{position:fixed;inset:0;z-index:-2;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5;animation:float 18s ease-in-out infinite}
+  .orb.a{width:520px;height:520px;background:radial-gradient(circle,#3b82f6,transparent 70%);top:-180px;left:-120px}
+  .orb.b{width:480px;height:480px;background:radial-gradient(circle,#a78bfa,transparent 70%);top:10%;right:-160px;animation-delay:-6s}
+  .orb.c{width:420px;height:420px;background:radial-gradient(circle,#22d3ee,transparent 70%);bottom:-160px;left:30%;animation-delay:-11s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-40px) scale(1.1)}}
+  .grid-bg{position:fixed;inset:0;z-index:-1;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:54px 54px;opacity:.12;mask-image:radial-gradient(circle at 50% 30%,#000,transparent 80%)}
+
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;background:linear-gradient(90deg,var(--brand),var(--brand2),var(--accent))}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:55;display:flex;justify-content:space-between;align-items:center;
+    padding:12px 24px;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 72%,transparent);border-bottom:1px solid var(--line)}
+  .brandmark{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:-.3px}
+  .logo{width:30px;height:30px;border-radius:9px;background:conic-gradient(from 130deg,var(--brand),var(--brand2),var(--accent),var(--brand));display:grid;place-items:center;font-weight:800;color:#06122e;font-size:15px}
+  .tb-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:11px;font-weight:600;font-size:13px;cursor:pointer;transition:.18s;font-family:inherit}
+  .btn:hover{transform:translateY(-1px);border-color:var(--brand)}
+  .btn.primary{background:linear-gradient(120deg,var(--brand),var(--brand2));color:#06122e;border:none}
+  .btn.ghost{background:transparent}
+
+  header.hero{padding:140px 0 60px;text-align:center;position:relative}
+  .badge{display:inline-flex;gap:9px;align-items:center;padding:8px 17px;border:1px solid var(--line);border-radius:999px;
+    background:color-mix(in srgb,var(--panel) 60%,transparent);color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.4px}
+  .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 12px var(--good);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  h1.title{font-size:clamp(40px,7.5vw,86px);line-height:.98;margin:26px 0 14px;font-weight:700;letter-spacing:-2.5px;
+    background:linear-gradient(120deg,var(--ink) 8%,var(--brand) 50%,var(--brand2) 92%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .subtitle{font-size:clamp(16px,2.3vw,21px);color:var(--muted);max-width:760px;margin:0 auto 30px}
+  .meta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .chip{padding:9px 17px;border:1px solid var(--line);border-radius:13px;background:var(--panel);font-size:13.5px;font-weight:600}
+  .chip b{color:var(--brand)}
+  .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .cta{padding:14px 24px;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;border:none;font-family:'Space Grotesk',sans-serif;transition:.18s}
+  .cta.solid{background:linear-gradient(120deg,var(--brand),var(--brand2));color:#06122e}
+  .cta.line{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .cta:hover{transform:translateY(-2px)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:54px 0 0}
+  .stat{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:26px;text-align:center;box-shadow:var(--shadow);overflow:hidden}
+  .stat::before{content:"";position:absolute;inset:0;background:radial-gradient(120px 80px at 50% 0%,color-mix(in srgb,var(--brand) 22%,transparent),transparent)}
+  .stat .n{font-family:'Space Grotesk',sans-serif;font-size:46px;font-weight:700;line-height:1;
+    background:linear-gradient(120deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+
+  nav.toc{position:sticky;top:55px;z-index:40;margin-top:56px;
+    background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  nav.toc .wrap{display:flex;gap:6px;overflow-x:auto;padding:12px 24px;scrollbar-width:none}
+  nav.toc .wrap::-webkit-scrollbar{display:none}
+  nav.toc a{white-space:nowrap;padding:8px 15px;border-radius:11px;color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:600;transition:.15s;border:1px solid transparent}
+  nav.toc a:hover{color:var(--ink);background:color-mix(in srgb,var(--panel) 70%,transparent)}
+  nav.toc a.active{color:var(--brand);border-color:var(--line);background:var(--panel)}
+
+  section{padding:64px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .sec-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+  .sec-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--brand);border:1px solid var(--line);padding:5px 11px;border-radius:9px;background:color-mix(in srgb,var(--brand) 9%,transparent)}
+  .sec-tag.live{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 10%,transparent)}
+  h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(24px,4vw,38px);margin:0;font-weight:700;letter-spacing:-1px}
+  .lede{color:var(--muted);margin:8px 0 30px;font-size:16px;max-width:820px}
+
+  .card{position:relative;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h3{margin:0 0 16px;font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif}
+  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--brand2) 18%,transparent);color:var(--brand2);border:1px solid color-mix(in srgb,var(--brand2) 35%,transparent)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0;border-radius:12px;overflow:hidden}
+  th{background:color-mix(in srgb,var(--brand) 11%,transparent);text-align:left;padding:11px 13px;font-weight:700;font-size:12.5px;border-bottom:2px solid var(--line)}
+  td{padding:10px 13px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);vertical-align:top}
+  tr:hover td{background:color-mix(in srgb,var(--brand) 5%,transparent)}
+  .ar th,.ar td{text-align:right}
+  table.md{font-size:13px;margin:8px 0}
+  table.md th{font-size:12px}
+
+  .anatomy{display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:start}
+  .anatomy .steps{display:flex;flex-direction:column;gap:10px}
+  .astep{border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.2s;background:var(--panel2)}
+  .astep:hover{border-color:var(--brand)}
+  .astep.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,transparent);transform:translateX(4px)}
+  .astep .k{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:9px}
+  .astep .k i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;font-weight:800;color:#06122e;background:linear-gradient(120deg,var(--brand),var(--brand2));font-size:13px}
+  .astep .d{font-size:13px;color:var(--muted);margin-top:6px;display:none}
+  .astep.on .d{display:block}
+  .live-prompt{background:#05080f;border:1px solid var(--line);border-radius:16px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#c8d3ee;min-height:280px;position:relative}
+  [data-theme="light"] .live-prompt{background:#0b1430;color:#dce4f7}
+  .live-prompt .lbl{color:var(--accent);font-weight:600}
+  .live-prompt .seg{transition:.3s;opacity:.55;padding:3px 0;border-radius:6px}
+  .live-prompt .seg.hot{opacity:1;background:color-mix(in srgb,var(--brand) 16%,transparent);box-shadow:-8px 0 0 color-mix(in srgb,var(--brand) 16%,transparent),8px 0 0 color-mix(in srgb,var(--brand) 16%,transparent)}
+
+  .prompt-box{background:color-mix(in srgb,var(--panel2) 70%,#000);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:13px;padding:16px 18px;font-size:13.5px;margin:14px 0;color:var(--ink)}
+  .prompt-box .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:8px}
+  .ok{color:var(--good);font-weight:600;font-size:13.5px}
+  .note{font-size:12.5px;color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);border:1px solid color-mix(in srgb,var(--warn) 28%,transparent);border-radius:11px;padding:11px 15px;margin:14px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+  .fb{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:15px 17px}
+  .fb .sid{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--brand);font-size:15px;display:flex;justify-content:space-between;align-items:center}
+  .fb .score{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+  .fb p{margin:8px 0 0;font-size:13px}
+  .winrow{box-shadow:inset 3px 0 0 var(--good)}
+  .tag-good{color:var(--good);font-weight:700}.tag-warn{color:var(--warn);font-weight:700}.tag-bad{color:var(--bad);font-weight:700}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .bar{transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .axis{stroke:var(--line);stroke-width:1}
+  .glabel{fill:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace}
+  .vlabel{fill:var(--ink);font-size:12px;font-weight:600}
+
+  /* ===== INTERACTIVE SHOW ===== */
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .scn-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .scn-tab{padding:9px 15px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;color:var(--muted)}
+  .scn-tab.on{color:var(--brand);border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,transparent)}
+  .desk-tools{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+  .desk-tools .btn{padding:7px 12px;font-size:12.5px}
+  .desk-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:20px 24px;grid-template-areas:"sw gauge" "prompt out";align-items:start}
+  .dk-sw{grid-area:sw}.dk-gauge{grid-area:gauge}.dk-prompt{grid-area:prompt}.dk-out{grid-area:out}
+  .switch-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;width:100%;text-align:left;cursor:pointer;
+    background:transparent;border:1px solid transparent;border-radius:12px;padding:7px 8px;font:inherit;color:inherit;transition:.15s}
+  .switch-row:hover{border-color:var(--line);background:color-mix(in srgb,var(--panel) 50%,transparent)}
+  [dir="rtl"] .switch-row{text-align:right}
+  .switch{position:relative;display:inline-block;width:56px;height:32px;border-radius:999px;background:var(--line);flex:0 0 auto;transition:background .22s;border:1px solid var(--line)}
+  .switch.on{background:linear-gradient(120deg,var(--brand),var(--brand2))}
+  .switch .knob{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .switch.on .knob{transform:translateX(24px)}
+  .switch-row .nm{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;min-width:118px}
+  .switch-row .nm small{display:block;color:var(--muted);font-weight:500;font-size:11px}
+  .switch-row .key{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+  [dir="rtl"] .switch-row .key{margin-left:0;margin-right:auto}
+  .deskprompt{background:#05080f;border:1px solid var(--line);border-radius:14px;padding:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#c8d3ee;margin-top:14px;min-height:150px}
+  [data-theme="light"] .deskprompt{background:#0b1430;color:#dce4f7}
+  .deskprompt .seg{padding:3px 0;transition:.25s}
+  .deskprompt .seg .lbl{color:var(--accent);font-weight:600}
+  .deskprompt .seg.off{opacity:.55;text-decoration:line-through;color:var(--muted)}
+  .gauge-wrap{text-align:center;margin-bottom:8px}
+  .gauge-svg{max-width:330px;margin:0 auto}
+  .gauge-num{font-family:'Space Grotesk',sans-serif;font-size:52px;font-weight:700;line-height:1}
+  .gauge-verdict{font-weight:700;font-size:clamp(16px,2vw,22px);margin-top:2px}
+  .needle{transition:transform 1s cubic-bezier(.2,.8,.2,1);transform-origin:100px 100px;stroke-width:5}
+  .arcval{transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1),stroke .4s}
+  .ai-out{background:color-mix(in srgb,var(--panel2) 70%,#000);border:1px solid var(--line);border-radius:14px;padding:16px;min-height:200px}
+  .ai-out .cap{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;margin-bottom:10px}
+  .ai-out .body{font-size:13.5px}
+  .ai-out .body p{margin:6px 0}
+  .deg{border-radius:10px;padding:9px 12px;margin:8px 0;font-size:12.5px;font-weight:600}
+  .deg.red{background:color-mix(in srgb,var(--bad) 13%,transparent);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);color:#ffd2d2}
+  .deg.amber{background:color-mix(in srgb,var(--warn) 11%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);color:#ffe9b8}
+  [data-theme="light"] .deg.red{color:#a11}[data-theme="light"] .deg.amber{color:#8a5800}
+  .shake{animation:shake .5s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+  /* showdown */
+  .duel{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .duelcard{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--panel2)}
+  .duelcard.A{border-top:3px solid var(--bad)}.duelcard.B{border-top:3px solid var(--good)}
+  .duelcard h4{margin:0 0 8px;font-family:'Space Grotesk',sans-serif;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+  .duelcard .pr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:#05080f;border:1px solid var(--line);border-radius:9px;padding:10px;min-height:48px}
+  [data-theme="light"] .duelcard .pr{background:#0b1430;color:#cdd}
+  .duelcard .out{font-size:13px;margin-top:10px;min-height:90px}
+  .crit{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:5px 0;cursor:default}
+  .crit .mk{font-weight:800}
+  .tug{display:flex;height:40px;border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:18px 0 10px;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:clamp(15px,2.2vw,22px)}
+  #cntA,#cntB{font-size:clamp(16px,2.2vw,24px)}
+  .tug .a{background:linear-gradient(90deg,var(--bad),color-mix(in srgb,var(--bad) 60%,#000));display:flex;align-items:center;justify-content:flex-start;padding-left:14px;color:#fff;transition:flex-grow .6s cubic-bezier(.2,.8,.2,1)}
+  .tug .b{background:linear-gradient(90deg,color-mix(in srgb,var(--good) 60%,#000),var(--good));display:flex;align-items:center;justify-content:flex-end;padding-right:14px;color:#04231a;transition:flex-grow .6s cubic-bezier(.2,.8,.2,1)}
+  .votebtns{display:flex;gap:12px;justify-content:center;margin-bottom:6px}
+  .votebtns button{flex:1;max-width:260px;padding:14px;border-radius:13px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Space Grotesk',sans-serif;border:1px solid var(--line);transition:.15s}
+  .votebtns .vA{background:color-mix(in srgb,var(--bad) 30%,var(--panel));color:var(--ink)}
+  .votebtns .vB{background:color-mix(in srgb,var(--good) 30%,var(--panel));color:var(--ink)}
+  .votebtns button:hover{transform:translateY(-2px)}
+  .roomverdict{text-align:center;font-weight:700;margin-top:10px;font-size:15px}
+
+  /* hallucination */
+  .abstract{font-size:16px;line-height:2.1;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .abstract .s{cursor:pointer;padding:3px 5px;border-radius:6px;transition:.18s;font:inherit;color:inherit;background:transparent;
+    border:none;border-bottom:1px dashed color-mix(in srgb,var(--brand) 45%,transparent);line-height:2.1}
+  .abstract .s:hover{background:color-mix(in srgb,var(--brand) 12%,transparent)}
+  .abstract .s.found{background:color-mix(in srgb,var(--good) 20%,transparent);border-bottom:1px solid var(--good);color:var(--ink)}
+  .abstract .s.wrong{background:color-mix(in srgb,var(--bad) 18%,transparent)}
+  .pop{font-size:12.5px;background:#05080f;border:1px solid color-mix(in srgb,var(--good) 40%,transparent);border-radius:10px;padding:10px 12px;margin-top:8px;color:#d7ffe9}
+  [data-theme="light"] .pop{background:#0b1430}
+  .pop b{color:var(--good)}
+  .revscore{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:14px 0}
+  .revscore .big{font-family:'Space Grotesk',sans-serif;font-size:34px;font-weight:700;color:var(--good)}
+  .stamp{display:inline-block;border:4px solid var(--bad);color:var(--bad);font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:22px;padding:8px 18px;border-radius:10px;transform:rotate(-7deg);letter-spacing:2px;opacity:0;transition:.5s;text-transform:uppercase}
+  .stamp.show{opacity:1}
+
+  /* presenter mode */
+  .pmode{position:fixed;inset:0;z-index:200;background:radial-gradient(1200px 700px at 50% 0%,#13204a,#05070f);
+    display:none;flex-direction:column;color:#fff;padding:0}
+  .pmode.open{display:flex}
+  .pmode .ptop{display:flex;justify-content:space-between;align-items:center;padding:20px 34px;font-family:'JetBrains Mono',monospace;font-size:13px;color:#9fb0d8}
+  .pmode .pbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 8vw;max-width:1200px;margin:0 auto;width:100%}
+  .pmode .kicker{font-family:'JetBrains Mono',monospace;letter-spacing:3px;color:var(--accent);font-size:clamp(13px,1.6vw,17px);text-transform:uppercase;margin-bottom:14px}
+  .pmode .ptitle{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,6vw,72px);line-height:1.04;letter-spacing:-1.5px;margin:0 0 6px;
+    background:linear-gradient(120deg,#fff,var(--brand) 60%,var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .pmode .ptitle-ar{font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;color:#c8d6ff;font-size:clamp(20px,3vw,34px);margin:0 0 26px;font-weight:600}
+  .pmode ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px}
+  .pmode li{font-size:clamp(18px,2.4vw,30px);font-weight:500;display:flex;gap:16px;align-items:flex-start;opacity:0;transform:translateY(14px);animation:slideUp .5s forwards}
+  .pmode li::before{content:"▸";color:var(--accent);font-weight:800}
+  @keyframes slideUp{to{opacity:1;transform:none}}
+  .pmode .note-line{margin-top:34px;font-size:15px;color:#8ea0cc;border-left:3px solid var(--brand);padding-left:14px;max-width:760px}
+  .pmode .pbar{display:flex;gap:8px;padding:22px 34px;align-items:center}
+  .pmode .dots{display:flex;gap:7px}
+  .pmode .dot2{width:9px;height:9px;border-radius:50%;background:#33415f;transition:.2s}
+  .pmode .dot2.on{background:var(--brand);transform:scale(1.3)}
+  .pmode .pnav{margin-left:auto;display:flex;gap:8px}
+
+  /* takeaway */
+  .takeaway{background:linear-gradient(135deg,#0e1b3f,#10254f);border:1px solid var(--line);border-radius:22px;padding:34px;position:relative;overflow:hidden}
+  [data-theme="light"] .takeaway{background:linear-gradient(135deg,#eaf1ff,#f5f0ff)}
+  .takeaway h3{font-size:24px;margin-top:0}
+  .checklist{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px}
+  .check{background:color-mix(in srgb,var(--panel) 60%,transparent);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .check .n{font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:13px;color:#06122e;background:linear-gradient(120deg,var(--brand),var(--brand2));width:28px;height:28px;border-radius:8px;display:grid;place-items:center;margin-bottom:10px}
+  .check b{display:block;font-size:14px}
+  .check small{color:var(--muted);font-size:12px}
+
+  footer{padding:60px 0 90px;text-align:center;color:var(--muted);font-size:13.5px}
+  @media(max-width:880px){.stats{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.anatomy,.duel{grid-template-columns:1fr}.checklist{grid-template-columns:repeat(2,1fr)}
+    .desk-grid{grid-template-columns:1fr;grid-template-areas:"sw" "gauge" "prompt" "out"}}
+  @media(prefers-reduced-motion:reduce){
+    .orb,.badge .dot{animation:none}.shake{animation:none}
+    .reveal{opacity:1;transform:none;transition:none}.pmode li{opacity:1;transform:none;animation:none}
+    *{scroll-behavior:auto}}
+  @media print{.bgfx,.grid-bg,.topbar,nav.toc,#progress,.btn,.cta,.pmode,.votebtns,.scn-tabs,.desk-tools{display:none}
+    body{background:#fff;color:#111}.reveal{opacity:1;transform:none}.card,.stat{box-shadow:none}header.hero{padding-top:40px}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="bgfx"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+<div class="grid-bg"></div>
+
+<div class="topbar">
+  <div class="brandmark"><span class="logo">AI</span> Prompt Engineering Lab</div>
+  <div class="tb-actions">
+    <button class="btn ghost" id="langBtn">ع / EN</button>
+    <button class="btn" id="themeBtn">☀ Light</button>
+    <button class="btn" id="presentBtn">▶ Presenter</button>
+    <button class="btn primary" onclick="window.print()">⤓ PDF</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge"><span class="dot"></span>LIVE INTERACTIVE WORKSHOP DELIVERABLE</span>
+    <h1 class="title">Prompt Engineering<br>for Teaching &amp; Research</h1>
+    <p class="subtitle">An interactive demonstration of disciplined prompting — converting <b>Role · Task · Context · Output · Constraints</b> into publication-grade academic output, in Arabic &amp; English.</p>
+    <div class="meta-row">
+      <span class="chip">📍 <b>Al-Shaab University</b> · College of Engineering</span>
+      <span class="chip">🌐 Bilingual AR / EN</span>
+      <span class="chip">⚡ 9 prompts · executed end-to-end</span>
+    </div>
+    <div class="cta-row">
+      <button class="cta solid" onclick="document.getElementById('desk').scrollIntoView()">🎛 Try the Live Demo</button>
+      <button class="cta line" id="presentBtn2">▶ Presenter Mode</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n" data-count="2">0</div><div class="l">Prompt Templates</div></div>
+      <div class="stat"><div class="n" data-count="7">0</div><div class="l">Demo Cases</div></div>
+      <div class="stat"><div class="n" data-count="5">0</div><div class="l">Q1 Research Ideas</div></div>
+      <div class="stat"><div class="n" data-count="100" data-suffix="%">0</div><div class="l">Constraints Met</div></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc"><div class="wrap" id="tocWrap">
+  <a href="#method">⚙ Framework</a>
+  <a href="#desk">🎛 Mixing Desk</a>
+  <a href="#showdown">🥊 Showdown</a>
+  <a href="#hallucinate">🔍 Reviewer</a>
+  <a href="#tA">Teaching Activity</a>
+  <a href="#tB">Assessment MCQs</a>
+  <a href="#d1">Demo 1 · Feedback</a>
+  <a href="#d2">Demo 2 · Ideas</a>
+  <a href="#d4">Demo 4 · Evaluation</a>
+  <a href="#d6">Demo 6 · Screening</a>
+  <a href="#takeaway">🎁 Takeaway</a>
+</div></nav>
+
+<!-- METHOD -->
+<section id="method"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">FRAMEWORK</span><h2>The Prompt Anatomy — interactive</h2></div>
+  <p class="lede">Hover or tap each part to see how it builds a complete, professional prompt. This structure produced <i>every</i> result below.</p>
+  <div class="card anatomy">
+    <div class="steps">
+      <div class="astep on" data-seg="role"><div class="k"><i>1</i>Role · الدور</div><div class="d">Who the AI acts as — expertise &amp; perspective that shapes tone and depth.</div></div>
+      <div class="astep" data-seg="task"><div class="k"><i>2</i>Task · المهمة</div><div class="d">One precise action — design, generate, evaluate, mentor.</div></div>
+      <div class="astep" data-seg="context"><div class="k"><i>3</i>Context · السياق</div><div class="d">Course, audience, data, goal, region — grounds the output in reality.</div></div>
+      <div class="astep" data-seg="output"><div class="k"><i>4</i>Output · المخرجات</div><div class="d">Exact format &amp; required sections (table, count, fields).</div></div>
+      <div class="astep" data-seg="constraints"><div class="k"><i>5</i>Constraints · القيود</div><div class="d">Limits, ethics, tone, word count, "no fabricated references".</div></div>
+    </div>
+    <div class="live-prompt" id="livePrompt">
+      <div class="seg hot" data-seg="role"><span class="lbl"># Role</span><br>You are an experienced university professor of Electrical Engineering specialised in renewable energy.</div><br>
+      <div class="seg" data-seg="task"><span class="lbl"># Task</span><br>Design an active-learning activity on the factors affecting photovoltaic efficiency.</div><br>
+      <div class="seg" data-seg="context"><span class="lbl"># Context</span><br>3rd-year EE · 60 minutes · cooperative learning · critical thinking.</div><br>
+      <div class="seg" data-seg="output"><span class="lbl"># Output</span><br>A structured table: outcomes · description · materials · timing · assessment.</div><br>
+      <div class="seg" data-seg="constraints"><span class="lbl"># Constraints</span><br>Active learning · teamwork · ≤60 min · include formative assessment.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- F1 MIXING DESK -->
+<section id="desk"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag live">● LIVE DEMO</span><h2 id="deskTitle">The Prompt Mixing Desk</h2></div>
+  <p class="lede" id="deskLede">One engineered prompt. Flip the five switches and watch the quality gauge — and the AI's answer — change in real time. Turn off <b>Constraints</b> and a fabricated reference appears (clearly labelled <i>simulated</i>). <span class="mono" style="color:var(--muted)">Presenter keys: 1–5 toggle · 0 reset · R randomize</span></p>
+  <div class="scn-tabs" id="scnTabs" role="tablist" aria-label="Demo scenario"></div>
+  <div class="desk-tools">
+    <button class="btn" id="deskReset">↺ Reset (all on)</button>
+    <button class="btn" id="deskRandom">🎲 Randomize</button>
+    <button class="btn" id="deskOff">✕ All off</button>
+  </div>
+  <div class="card desk-grid">
+    <div class="dk-sw" id="switches"></div>
+    <div class="dk-gauge">
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 200 120" role="img" aria-label="Prompt quality gauge">
+          <path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--line)" stroke-width="16" stroke-linecap="round"/>
+          <path id="arcVal" class="arcval" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="var(--good)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+          <line id="needle" class="needle" x1="100" y1="100" x2="100" y2="34" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="100" cy="100" r="6" fill="var(--ink)"/>
+        </svg>
+        <div class="gauge-num" id="gaugeNum">100</div>
+        <div class="gauge-verdict" id="gaugeVerdict"></div>
+      </div>
+    </div>
+    <div class="dk-prompt deskprompt" id="deskPrompt"></div>
+    <div class="dk-out ai-out">
+      <div class="cap"><span id="aiCap">Simulated AI response</span><span id="aiBadge"></span></div>
+      <div class="body" id="aiBody"></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- F2 SHOWDOWN -->
+<section id="showdown"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag live">● CLASS VOTE</span><h2>Prompt Showdown</h2></div>
+  <p class="lede">Same task, two prompts — lazy vs engineered. <b>Vote</b>, then hit Reveal and watch both "run". <span class="mono" style="color:var(--muted)">Presenter key: V</span></p>
+  <div class="scn-tabs" id="duelTabs"></div>
+  <div class="card">
+    <div class="votebtns">
+      <button class="vA" id="voteA">Vote A — lazy ✋</button>
+      <button class="vB" id="voteB">Vote B — engineered ✋</button>
+    </div>
+    <div class="tug"><div class="a" id="tugA" style="flex-grow:1">A <span id="cntA" style="margin-left:8px">0</span></div><div class="b" id="tugB" style="flex-grow:1"><span id="cntB" style="margin-right:8px">0</span> B</div></div>
+    <div style="text-align:center;margin:8px 0 18px"><button class="btn primary" id="revealBtn">▶ Reveal both outputs</button> <button class="btn" id="resetVote">↺ Reset votes</button></div>
+    <div class="duel">
+      <div class="duelcard A">
+        <h4>Prompt A · lazy <span class="pill" style="background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,transparent)">weak</span></h4>
+        <div class="pr" id="prA"></div>
+        <div class="out" id="outA"></div>
+        <div id="critA"></div>
+      </div>
+      <div class="duelcard B">
+        <h4>Prompt B · engineered <span class="pill" style="background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good);border-color:color-mix(in srgb,var(--good) 35%,transparent)">strong</span></h4>
+        <div class="pr" id="prB"></div>
+        <div class="out" id="outB"></div>
+        <div id="critB"></div>
+      </div>
+    </div>
+    <div class="roomverdict" id="roomVerdict"></div>
+  </div>
+</div></section>
+
+<!-- F3 HALLUCINATION -->
+<section id="hallucinate"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag live">● YOU ARE THE REVIEWER</span><h2 id="halTitle">Spot the Hallucination</h2></div>
+  <p class="lede" id="halIntro"></p>
+  <div class="card">
+    <div class="note" id="halBanner"></div>
+    <div class="abstract" id="abstract"></div>
+    <div class="revscore">
+      <div><span class="big" id="foundN">0</span><span style="color:var(--muted)"> / 3 traps found</span></div>
+      <div class="stamp" id="stamp">Desk Reject</div>
+      <button class="btn" id="rescueBtn" style="margin-left:auto">🛟 Rescue with verification</button>
+    </div>
+    <div id="rescueBox"></div>
+  </div>
+</div></section>
+
+<!-- TEMPLATE A -->
+<section id="tA"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">TEMPLATE A</span><h2>Active-Learning Classroom Activity</h2></div>
+  <p class="lede">Renewable Energy Systems · Factors affecting PV efficiency · 60 min · 3rd-year EE.</p>
+  <div class="card"><h3>نشاط Jigsaw + تحدّي البيانات <span class="pill">60 دقيقة</span></h3>
+    <table class="ar">
+      <tr><th>العنصر</th><th>التفاصيل</th></tr>
+      <tr><td><b>مخرجات التعلم</b></td><td>LO1 تفسير العوامل الفيزيائية · LO2 تحليل بيانات أداء حقيقية · LO3 تقييم حلول هندسية لرفع الكفاءة.</td></tr>
+      <tr><td><b>وصف النشاط</b></td><td>5 مجموعات "خبراء" — كل واحدة تتخصص في عامل (الإشعاع، الحرارة، التظليل، الغبار، زاوية الميل)، ثم تُعاد لبناء تفسير كامل للوح حقيقي منخفض الأداء.</td></tr>
+      <tr><td><b>توزيع الوقت</b></td><td>5د تمهيد · 15د خبراء · 20د مجموعات متكاملة · 12د عرض ونقاش · 8د تقييم تكويني.</td></tr>
+      <tr><td><b>التقييم التكويني</b></td><td>بطاقة خروج + قائمة تحقق: دقة التحليل، جودة الحجة، التعاون.</td></tr>
+    </table>
+    <p class="ok">✓ Active learning · critical thinking · teamwork · ≤60 min · formative assessment</p>
+  </div>
+</div></section>
+
+<!-- TEMPLATE B -->
+<section id="tB"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">TEMPLATE B</span><h2>Assessment Questions — DC-DC Converters</h2></div>
+  <p class="lede">Power Electronics · Bloom: Apply &amp; Analyze · medium difficulty · ~20 min · sample of 10 MCQs.</p>
+  <div class="card"><h3>Sample MCQs <span class="pill">10 Q + Answer Key</span></h3>
+    <table>
+      <tr><th>#</th><th>Question</th><th>Correct</th><th>Bloom</th></tr>
+      <tr><td>1</td><td>Buck converter, D=0.4, Vin=24 V (CCM) → ideal Vout?</td><td><b>9.6 V</b></td><td>Apply</td></tr>
+      <tr><td>2</td><td>Boost: Vin=12 V → Vout=30 V, duty cycle D ≈ ?</td><td><b>0.60</b></td><td>Apply</td></tr>
+      <tr><td>4</td><td>A converter enters DCM mainly when…</td><td><b>load current &lt; critical value</b></td><td>Analyze</td></tr>
+      <tr><td>8</td><td>Loss that rises with switching frequency?</td><td><b>switching (transition) loss</b></td><td>Analyze</td></tr>
+      <tr><td>9</td><td>Measured Vout below ideal — most likely cause?</td><td><b>conduction/switching losses &amp; parasitics</b></td><td>Analyze</td></tr>
+    </table>
+    <p class="ok">✓ 4 options · single key · no repeats · 20-min length · Apply + Analyze</p>
+  </div>
+</div></section>
+
+<!-- DEMO 1 -->
+<section id="d1"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">DEMO 1</span><h2>AI-Assisted Formative Feedback</h2></div>
+  <p class="lede">Individualized, rubric-aligned feedback for an anonymous class — no grades changed, no comparisons, ≤120 words each.</p>
+  <div class="grid2">
+    <div class="card chart-card"><h3>Total Scores by Student</h3>
+      <svg id="barChart" viewBox="0 0 460 240" role="img" aria-label="Student total scores"></svg>
+    </div>
+    <div class="card"><h3>Rubric Breakdown (max)</h3>
+      <table>
+        <tr><th>Student</th><th>Tech /25</th><th>Crit /30</th><th>Org /20</th><th>Ref /15</th><th>Orig /10</th><th>Total</th></tr>
+        <tr><td>S01</td><td>24</td><td>28</td><td>19</td><td>15</td><td>10</td><td><b>96</b></td></tr>
+        <tr><td>S02</td><td>20</td><td>22</td><td>18</td><td>13</td><td>9</td><td><b>82</b></td></tr>
+        <tr><td>S03</td><td>17</td><td>18</td><td>15</td><td>10</td><td>8</td><td><b>68</b></td></tr>
+        <tr><td>S04</td><td>14</td><td>15</td><td>14</td><td>9</td><td>7</td><td><b>59</b></td></tr>
+        <tr><td>S05</td><td>22</td><td>26</td><td>17</td><td>11</td><td>8</td><td><b>84</b></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="fb"><div class="sid">S01 <span class="score">96 · top band</span></div><p>Strong across all criteria. <b>Improve:</b> organization signposting. <b>Recs:</b> LO3-linked summary, consistent numbering, transitions.</p></div>
+    <div class="fb"><div class="sid">S03 <span class="score">68 · developing</span></div><p>Needs deeper technical &amp; analytical depth. <b>Recs:</b> worked efficiency examples (LO2), justify design choices (LO3), verified references.</p></div>
+    <div class="fb"><div class="sid">S05 <span class="score">84 · strong analysis</span></div><p>Excellent critical analysis. <b>Recs:</b> verified APA-7 sources, add local-climate angle, smoother transitions.</p></div>
+  </div>
+  <p class="ok" style="margin-top:14px">✓ Data-only · rubric-aligned · grades untouched · no comparisons · supportive tone</p>
+</div></section>
+
+<!-- DEMO 2 -->
+<section id="d2"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">DEMO 2 · 3</span><h2>Five Publishable Q1 Research Ideas</h2></div>
+  <p class="lede">AI in Renewable Energy — LLMs + Explainable AI for PV monitoring, fault diagnosis &amp; forecasting · MENA · 2023–2026.</p>
+  <div class="note">⚠️ Per the prompt's own constraint: novelty must be verified against recent Scopus / WoS literature before submission. Journals below are <b>candidates</b> — confirm each one's current scope and quartile before submitting. No references fabricated.</div>
+  <div class="card"><table>
+    <tr><th>#</th><th>Working Title</th><th>Core Gap</th><th>Candidate journals (verify scope &amp; tier)</th></tr>
+    <tr class="winrow"><td>1 🏆</td><td><b>XAI Fault Diagnosis of PV under MENA Desert Conditions</b></td><td>XAI rare for soiling-dominated desert faults</td><td>Applied Energy · Energy AI</td></tr>
+    <tr><td>2</td><td>LLM Copilot for PV O&amp;M Decision Support</td><td>LLM decision-support for O&amp;M unexplored</td><td>Energy AI · IEEE T. Sust. Energy</td></tr>
+    <tr><td>3</td><td>Physics-Informed + LLM PV Forecasting</td><td>PINN + LLM hybridization nascent</td><td>Renewable Energy · Solar Energy</td></tr>
+    <tr><td>4</td><td>Explainable Anomaly Detection for Rooftop PV Fleets</td><td>Fleet-scale XAI attribution thin</td><td>Energy AI · Applied Energy</td></tr>
+    <tr><td>5</td><td>Trustworthy LLM Report Generation for PV Audits</td><td>Verifiable LLM technical reports underexplored</td><td>Energy AI · Applied Energy</td></tr>
+  </table></div>
+</div></section>
+
+<!-- DEMO 4 -->
+<section id="d4"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">DEMO 4</span><h2>Critical Evaluation &amp; Ranking</h2></div>
+  <p class="lede">The AI then evaluated its own ideas like a Q1 reviewer — scoring each out of 10 and ranking them.</p>
+  <div class="grid2">
+    <div class="card chart-card"><h3>Final Score / 10</h3>
+      <svg id="rankChart" viewBox="0 0 460 250" role="img" aria-label="Idea ranking"></svg>
+    </div>
+    <div class="card"><h3>Scorecard <span class="pill">reviewer mindset</span></h3>
+      <table>
+        <tr><th>Idea</th><th>Orig.</th><th>Gap</th><th>Feas.</th><th>Impact</th><th>/10</th></tr>
+        <tr class="winrow"><td><b>1 · XAI Fault Diag. 🏆</b></td><td>8</td><td>9</td><td>8</td><td>9</td><td class="tag-good"><b>8.6</b></td></tr>
+        <tr><td>2 · LLM O&amp;M Copilot</td><td>9</td><td>8</td><td>7</td><td>9</td><td>7.9</td></tr>
+        <tr><td>3 · PINN + LLM Forecast</td><td>8</td><td>7</td><td>7</td><td>8</td><td>7.9</td></tr>
+        <tr><td>4 · Fleet XAI Anomaly</td><td>7</td><td>7</td><td>8</td><td>8</td><td>7.4</td></tr>
+        <tr><td>5 · Trustworthy Audits</td><td>8</td><td>7</td><td>8</td><td>8</td><td>7.1</td></tr>
+      </table>
+    </div>
+  </div>
+</div></section>
+
+<!-- DEMO 6 -->
+<section id="d6"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">DEMO 6</span><h2>Editor-in-Chief Desk Screening</h2></div>
+  <p class="lede">The AI adopts a Q1 Editor-in-Chief mindset and decides each title's fate before peer review.</p>
+  <div class="card"><table>
+    <tr><th>Title</th><th>/10</th><th>Editorial Decision</th></tr>
+    <tr class="winrow"><td><b>① GenAI Disclosure Governance Framework</b></td><td>8.8</td><td class="tag-good">Send for Peer Review</td></tr>
+    <tr><td>③ RAG to Reduce Fake References</td><td>8.3</td><td class="tag-good">Send for Peer Review</td></tr>
+    <tr><td>⑤ Fairness of AI-Text Detectors</td><td>8.0</td><td class="tag-warn">Major Revision Before Review</td></tr>
+    <tr><td>④ XAI for Over-Reliance Risk</td><td>7.6</td><td class="tag-warn">Major Revision Before Review</td></tr>
+    <tr><td>② AI Tools &amp; Research Productivity</td><td>7.0</td><td class="tag-bad">Desk Reject (too generic)</td></tr>
+  </table></div>
+</div></section>
+
+<!-- TAKEAWAY -->
+<section id="takeaway"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag">TAKEAWAY</span><h2>Keep This Card</h2></div>
+  <div class="takeaway">
+    <h3 class="display">The 5-Part Prompt Checklist <span class="pill" id="ctaPill">Now try it yourself</span></h3>
+    <p style="color:var(--muted);margin-top:4px">Before you hit enter, make sure your prompt has all five. Miss one — and the quality gauge drops, as you saw live.</p>
+    <div class="checklist">
+      <div class="check"><div class="n">1</div><b>Role · الدور</b><small>Who should the AI be?</small></div>
+      <div class="check"><div class="n">2</div><b>Task · المهمة</b><small>One precise action.</small></div>
+      <div class="check"><div class="n">3</div><b>Context · السياق</b><small>Course, level, data, goal.</small></div>
+      <div class="check"><div class="n">4</div><b>Output · المخرجات</b><small>Exact format wanted.</small></div>
+      <div class="check"><div class="n">5</div><b>Constraints · القيود</b><small>Limits, ethics, verify refs.</small></div>
+    </div>
+    <p style="margin-top:20px;font-size:13px;color:var(--muted)"><b>Golden rule · القاعدة الذهبية:</b> The AI drafts — <b>you</b> verify. Always check every reference and statistic before it reaches a student or a journal. · الذكاء الاصطناعي يكتب المسودة، وأنت تتحقق.</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p class="display" id="footTag" style="font-size:16px;color:var(--ink)">Prompt Engineering Workshop · Al-Shaab University · College of Engineering</p>
+  <p style="opacity:.75">2 templates + 7 demo cases executed end-to-end · bilingual AR/EN · all prompt constraints satisfied.<br>
+  Literature-novelty claims flagged for verification; no references fabricated. Simulated demo failures are clearly labelled.</p>
+</div></footer>
+
+<!-- PRESENTER OVERLAY -->
+<div class="pmode" id="pmode">
+  <div class="ptop"><span>PRESENTER MODE · Al-Shaab University</span><span id="pCount"></span></div>
+  <div class="pbody" id="pBody"></div>
+  <div class="pbar">
+    <div class="dots" id="pDots"></div>
+    <div class="pnav">
+      <button class="btn" id="pPrev">← Prev</button>
+      <button class="btn" id="pNote">🗒 Notes</button>
+      <button class="btn primary" id="pNext">Next →</button>
+      <button class="btn" id="pExit">✕ Exit (Esc)</button>
+    </div>
+  </div>
+</div>
+
+<script>const WORKSHOP_DATA = {"playground": [{"id": "active-learning", "title_en": "Designing an Active-Learning Activity", "title_ar": "تصميم نشاط تعلّم نشط", "weak_prompt": "Give me a classroom activity about solar panels.", "weak_output": "Here is a classroom activity about solar panels:\n\nAsk students to research how solar panels work and present what they find. You can divide them into groups and have each group make a poster. Then discuss as a class why solar energy is important for the environment. This helps students learn about renewable energy in a fun, hands-on way.", "strong": {"role": "You are an experienced professor of Electrical Engineering specialised in renewable-energy systems and active-learning pedagogy.", "task": "Design ONE active-learning classroom activity that makes students discover, through analysis, the physical factors that reduce photovoltaic (PV) panel efficiency.", "context": "Course: Renewable Energy Systems · 3rd-year EE undergraduates · class of ~30 · single 60-minute session · students already know the basic I–V curve and the diode model · classroom has whiteboards and laptops but no lab access today.", "output": "Return a structured table with these rows: Learning Outcomes (measurable, Bloom-tagged) · Activity Description (named technique) · Materials · Minute-by-minute Timing (must sum to 60) · Formative Assessment instrument. End with a one-line checklist confirming each constraint is met.", "constraints": "Must use a recognised cooperative-learning technique (e.g. Jigsaw); must drive critical thinking and teamwork, not passive listening; total time ≤ 60 min; include an in-class formative assessment; keep it feasible without lab equipment; do not invent fictional datasets — describe the data type instead."}, "strong_output": "**نشاط: Jigsaw + تحدّي تحليل البيانات** (60 دقيقة · 3rd-year EE)\n\n| العنصر | التفاصيل |\n|---|---|\n| **مخرجات التعلم** | LO1 يُفسّر أثر كل عامل فيزيائي على الكفاءة *(فهم)* · LO2 يُحلّل بيانات أداء لربط عامل بانخفاض الكفاءة *(تحليل)* · LO3 يُقيّم حلاً هندسياً لرفع الكفاءة *(تقييم)* |\n| **وصف النشاط** | Jigsaw من 5 مجموعات خبراء (إشعاع/حرارة/تظليل/غبار/زاوية ميل)؛ كل مجموعة تُحلّل منحنى I–V أو سجل أداء يومي لعاملها، ثم تُعاد المجموعات لتفسير لوح حقيقي منخفض الأداء معاً. |\n| **المواد** | بطاقات بيانات (CSV أو منحنيات I–V مطبوعة)، لابتوبات، سبورات. |\n| **التوقيت** | 5 تمهيد · 15 مجموعات الخبراء · 20 المجموعات المتكاملة · 12 عرض + نقاش نقدي · 8 تقييم تكويني = **60** |\n| **التقييم التكويني** | بطاقة خروج بسؤالين + قائمة تحقق (دقة التحليل · جودة الحجة · التعاون). |\n\n✓ Jigsaw · تفكير نقدي وتعاون · ≤60 د · تقييم تكويني · بلا مختبر · لا بيانات مُختلقة.", "weak_score": 28, "strong_score": 92, "why_better_en": "The weak prompt names only a topic, so the AI returns a generic, passive 'research-and-present' filler with no learning outcomes, no timing, no assessment, and no engineering depth. The strong prompt fixes the role, the precise pedagogical task, the real classroom context (level, size, duration, prior knowledge, no-lab constraint), an exact table-with-checklist output, and constraints that force a named cooperative technique, critical thinking, a 60-minute budget, and a formative instrument — turning a vague idea into a ready-to-run lesson plan.", "why_better_ar": "الموجّه الضعيف يذكر الموضوع فقط، فيردّ الذكاء الاصطناعي بنشاط عام سلبي (ابحث واعرض) بلا مخرجات تعلم ولا توقيت ولا تقييم ولا عمق هندسي. أما الموجّه القوي فيحدّد الدور، والمهمة التربوية الدقيقة، والسياق الواقعي (المستوى، حجم الصف، المدة، المعرفة السابقة، غياب المختبر)، ومخرجاً على شكل جدول مع قائمة تحقق، وقيوداً تفرض أسلوباً تعاونياً مُسمّى وتفكيراً نقدياً وميزانية 60 دقيقة وأداة تقييم تكويني — فيتحوّل من فكرة مبهمة إلى خطة درس جاهزة للتنفيذ."}, {"id": "exam-questions", "title_en": "Writing Exam Questions", "title_ar": "كتابة أسئلة الامتحان", "weak_prompt": "Write me some exam questions on DC-DC converters.", "weak_output": "Here are some exam questions on DC-DC converters:\n\n1. What is a DC-DC converter?\n2. Explain how a buck converter works.\n3. What is duty cycle?\n4. List the types of DC-DC converters.\n5. Why are DC-DC converters important?\n\nThese cover the main ideas about DC-DC converters.", "strong": {"role": "You are an experienced Power Electronics examiner who writes valid, discriminating assessment items.", "task": "Write 8 multiple-choice questions on DC-DC converters (buck, boost, buck-boost: conversion ratios, CCM/DCM, ripple, losses, efficiency).", "context": "Course: Power Electronics · 3rd-year EE · students can already derive the ideal buck/boost transfer functions · this is a 20-minute in-class quiz used to check applied understanding before the lab.", "output": "For EACH item give: the stem, four options A–D with exactly one correct answer, the correct letter, the Bloom level (Apply or Analyze), and the concept tested. After the set, give a compact answer key and a one-line coverage note (no two items testing the same concept).", "constraints": "Target Bloom Apply + Analyze only (no pure recall/definition questions); medium difficulty; plausible distractors based on common student errors (e.g. inverting the duty-cycle formula); numeric items must be solvable mentally or with a basic calculator in ~2 min; do not duplicate concepts; keep total length to ~20 minutes."}, "strong_output": "**Power Electronics · DC-DC Quiz (8 MCQ · ~20 min · Apply/Analyze)**\n\n| # | Stem (abridged) | Key | Bloom | Concept |\n|---|---|---|---|---|\n| 1 | Buck, D=0.4, Vin=24 V (CCM) → Vout? | **B) 9.6 V** | Apply | Buck ratio |\n| 2 | Boost, Vin=12→Vout=30 V → D ≈ ? | **B) 0.60** | Apply | Boost ratio |\n| 3 | Raising fsw (else equal) primarily… | **B) shrinks L and C** | Analyze | Sizing trade-off |\n| 4 | Converter enters DCM mainly when… | **B) load I < critical value** | Analyze | CCM/DCM |\n| 5 | Buck-boost at D=0.5 vs Vin… | **B) equal mag, inverted** | Apply | Buck-boost ratio |\n| 6 | Vout below ideal buck value — likely cause? | **A) conduction/switching loss + parasitics** | Analyze | Non-ideal losses |\n\nDistractor A in Q2 = 0.40 (students invert 1−D). **Key:** 1B 2B 3B 4B 5B 6A. ✓ Apply+Analyze only · no repeated concept · ~20 min.", "weak_score": 22, "strong_score": 90, "why_better_en": "The weak prompt yields five shallow recall questions ('What is…', 'List…') with no answers, no difficulty control, and no cognitive level — useless as a graded quiz. The strong prompt pins the examiner role, an exact item count and sub-topics, the cohort's prior knowledge, a per-item output schema (stem, options, key, Bloom, concept), and constraints that ban pure recall, demand error-based distractors, cap solving time, and forbid duplicate concepts — producing a valid, discriminating, answer-keyed quiz the professor can use immediately.", "why_better_ar": "الموجّه الضعيف يُنتج خمسة أسئلة استرجاع سطحية (ما هو…، عدّد…) بلا إجابات ولا ضبط للصعوبة ولا مستوى معرفي — غير صالحة كاختبار مُقيَّم. أما الموجّه القوي فيُثبّت دور المُمتحِن، وعدد الأسئلة ومواضيعها الفرعية بدقة، والمعرفة السابقة للطلبة، ومخرجاً مُهيكلاً لكل سؤال (نص، خيارات، مفتاح، مستوى بلوم، المفهوم)، وقيوداً تمنع الاسترجاع البحت وتطلب مُشتّتات مبنية على أخطاء شائعة وتحدّد زمن الحل وتمنع تكرار المفاهيم — فيُنتج اختباراً صالحاً ومُميِّزاً ومُرفقاً بمفتاح إجابة جاهزاً للاستخدام فوراً."}, {"id": "research-ideas", "title_en": "Generating Scopus-Q1 Research Ideas", "title_ar": "توليد أفكار بحثية لمجلات Scopus-Q1", "weak_prompt": "Suggest research ideas about AI and renewable energy.", "weak_output": "Here are some research ideas about AI and renewable energy:\n\n1. Using AI to improve solar energy.\n2. Machine learning for wind power prediction.\n3. AI for smart grids.\n4. Deep learning in renewable energy systems.\n5. Optimizing energy with artificial intelligence.\n\nThese are promising and important topics in the field today.", "strong": {"role": "You are a senior researcher and frequent Scopus-Q1 reviewer in AI applications for renewable energy.", "task": "Propose 3 specific, publishable research ideas at the intersection of explainable AI / LLMs and photovoltaic (PV) systems.", "context": "Focus: PV fault diagnosis, monitoring, and forecasting · regional angle: MENA desert conditions (dust/soiling, high irradiance) · recent window 2023–2026 · the team can collect field I–V and thermal data and use public weather datasets.", "output": "Return a comparison table with columns: Working Title · Research Problem · Specific Gap · Objective · Why Novel · Methodology · Candidate Q1 Journals. Add one closing line on how to confirm novelty.", "constraints": "Each idea must be specific (not 'AI for solar'); must state a concrete gap; must be feasible with collectable/public data; flag that novelty has to be verified against current Scopus/WoS literature; DO NOT fabricate references, citations, or statistics; suggest journals by name only as candidates whose scope must be re-checked."}, "strong_output": "**3 candidate Q1 ideas — XAI/LLM × PV (MENA, 2023–2026)**\n\n| Working Title | Specific Gap | Why Novel | Method | Candidate Q1 Journals |\n|---|---|---|---|---|\n| XAI-Driven PV Fault Diagnosis under Desert Soiling | XAI rarely validated for soiling-dominated faults | Couples explanations with region-specific soiling physics | CNN/transformer on I–V + thermal; SHAP/Grad-CAM; field-validated | Applied Energy · Energy and AI |\n| Trust-Calibrated LLM Copilot for PV O&M | LLM decision-support for PV O&M largely unexplored | Grounded RAG measured against operator-trust outcomes | RAG over manuals + logs; expert evaluation; ablation | Energy and AI · IEEE T. Sustain. Energy |\n| Physics-Informed + LLM Short-Term PV Forecast | PINN + LLM weather-text fusion is nascent | Adds textual weather context under physics constraints | PINN baseline + LLM feature fusion; public NWP data | Renewable Energy · Solar Energy |\n\n⚠️ Confirm novelty against current Scopus/WoS before writing. No references or statistics are invented; journal names are candidates whose scope must be re-checked.", "weak_score": 25, "strong_score": 91, "why_better_en": "The weak prompt produces five interchangeable headline topics ('AI for smart grids') that are too broad to publish, with no gap, method, target venue, or ethics safeguard. The strong prompt sets a reviewer's role, a precise count and sub-domain, a regional/temporal frame, a collectable-data feasibility check, and a full comparison-table schema — while its constraints force specificity, demand a stated gap, flag novelty for verification, and explicitly forbid fabricated references/statistics, yielding three reviewer-ready, ethically safe research directions.", "why_better_ar": "الموجّه الضعيف يُنتج خمسة عناوين عامة متشابهة (الذكاء الاصطناعي للشبكات الذكية) واسعة جداً وغير قابلة للنشر، بلا فجوة ولا منهجية ولا مجلة مستهدفة ولا ضمانة أخلاقية. أما الموجّه القوي فيُحدّد دور المُحكِّم، والعدد والمجال الفرعي بدقة، والإطار الإقليمي/الزمني، وفحص جدوى البيانات القابلة للجمع، وجدول مقارنة كامل البنية — بينما تفرض قيوده التحديد وتطلب ذكر الفجوة وتنبّه للتحقق من الحداثة وتمنع صراحةً اختلاق المراجع أو الإحصاءات، فينتج ثلاثة اتجاهات بحثية جاهزة للتحكيم وآمنة أخلاقياً."}], "quiz": [{"theme_en": "Designing an active-learning activity (Renewable Energy Systems)", "promptA": "Act as a 3rd-year Electrical Engineering instructor. Design a 60-minute active-learning activity on the factors affecting photovoltaic (PV) efficiency. Use a cooperative method (e.g., Jigsaw) where students analyze real I–V or daily-performance data. Return a table with: learning outcomes, activity description, materials, time breakdown, and a formative-assessment strategy. Constraints: must fit in 60 min, promote teamwork and critical thinking, and include an in-class formative check (e.g., exit ticket).", "promptB": "You are a great teacher. Make an engaging and interactive lesson about solar panel efficiency that students will love. Make it active and fun, and explain everything clearly.", "stronger": "A", "explanation_en": "A is stronger on every part of the framework. Role: 'a 3rd-year EE instructor' fixes expertise and level, whereas B's 'great teacher' is empty flattery. Task: A specifies one action (design a 60-min activity) plus a concrete method (Jigsaw on real I–V data); B says 'make a lesson' with no method. Context: A names the course level, duration, and data type so the output is realistic; B gives none. Output: A demands a 5-column table; B leaves format to chance. Constraints: A bounds time, pedagogy, and assessment; B's 'fun' and 'love it' are unmeasurable. B's vagueness invites a generic, unusable answer.", "explanation_ar": "الصياغة A أقوى في كل عناصر الإطار. الدور: «مُحاضر هندسة كهربائية للسنة الثالثة» يحدّد الخبرة والمستوى، بينما «معلّم رائع» في B مجرّد إطراء فارغ. المهمة: A تحدّد فعلاً واحداً (تصميم نشاط 60 دقيقة) وطريقة محددة (Jigsaw على بيانات I–V حقيقية)، أمّا B فتقول «اصنع درساً» دون طريقة. السياق: A تذكر المستوى والمدة ونوع البيانات فيصبح الناتج واقعياً، وB خالية منه. المخرجات: A تطلب جدولاً من 5 أعمدة، وB تترك الشكل للصدفة. القيود: A تضبط الوقت والأسلوب التربوي والتقييم، بينما «ممتع» و«سيحبه الطلبة» في B غير قابلة للقياس. غموض B يستدعي إجابة عامة غير قابلة للاستخدام."}, {"theme_en": "Writing multiple-choice exam questions (Power Electronics)", "promptA": "Write 10 multiple-choice questions about DC-DC converters for my power electronics course. Make them good quality and not too easy. Include the answers.", "promptB": "You are a Power Electronics examiner. Write 10 MCQs on DC-DC converters (buck, boost, buck-boost) for 3rd-year EE students at the Apply and Analyze levels of Bloom's taxonomy, medium difficulty, doable in ~20 minutes. Each question: 4 options, exactly one correct, no repeated concept, include numeric worked cases (e.g., duty cycle, ripple). Output the 10 questions, then a separate answer key tagging each item's Bloom level.", "stronger": "B", "explanation_en": "B is stronger because it operationalizes 'good quality' that A only gestures at. Role: 'Power Electronics examiner' sets an assessment-design lens. Task: B scopes the converter types and pins cognitive demand to specific Bloom levels (Apply/Analyze), turning A's vague 'not too easy' into a measurable target. Context: 3rd-year EE and a ~20-minute length calibrate difficulty and quantity. Output: B dictates exact structure — 4 options, one key, no repeated concept, a separate Bloom-tagged answer key — so the result is class-ready; A's 'include the answers' is underspecified. Constraints: numeric worked cases and 'no repeated concept' prevent the trivial, redundant items A would likely produce.", "explanation_ar": "الصياغة B أقوى لأنها تُفعِّل معنى «جودة عالية» التي تلمّح إليها A فقط. الدور: «ممتحِن في إلكترونيات القدرة» يضبط زاوية تصميم التقييم. المهمة: B تحدّد أنواع المحوّلات وتربط المستوى المعرفي بمستويات بلوم (تطبيق/تحليل)، فتحوّل عبارة «ليست سهلة جداً» الغامضة في A إلى هدف قابل للقياس. السياق: السنة الثالثة ومدة ~20 دقيقة تضبطان الصعوبة والكمّ. المخرجات: B تفرض بنية دقيقة — 4 خيارات، إجابة واحدة، عدم تكرار المفهوم، ومفتاح إجابات منفصل موسوم بمستوى بلوم — فيصبح الناتج جاهزاً للصف، بينما «أدرج الإجابات» في A ناقصة التحديد. القيود: الحالات العددية و«عدم تكرار المفهوم» تمنعان الأسئلة التافهة والمكرّرة التي قد تنتجها A."}, {"theme_en": "Generating publishable Q1 research ideas (AI + Renewable Energy)", "promptA": "Act as a senior researcher in AI for renewable energy. Propose 5 publishable research ideas on applying LLMs and explainable AI to PV monitoring, fault diagnosis, and forecasting, targeted at MENA and the 2023–2026 window. For each, give: problem, gap, objectives, research questions, why it is novel, methodology, contribution, and 2–3 candidate Scopus-Q1 journals. List exactly 5 candidate journals per idea by name and provide their full impact-factor figures and confirmed Q1 ranking for this year. Constraints: feasible with public datasets; non-generic.", "promptB": "Act as a senior researcher in AI for renewable energy. Propose 5 publishable research ideas on applying LLMs and explainable AI to PV monitoring, fault diagnosis, and forecasting, targeted at MENA and the 2023–2026 window. For each, give: problem, gap, objectives, research questions, why it is novel, methodology, contribution, and 2–3 candidate Scopus-Q1 journals. Constraints: feasible with public datasets; non-generic; do not fabricate references or citations; explicitly flag any novelty or journal-tier claim as 'to be verified against recent Scopus/WoS literature.'", "stronger": "B", "explanation_en": "Role, Task, Context, and Output are nearly identical here — the deciding difference is the Constraints, which is the part faculty most often neglect. B adds the anti-hallucination guardrails that make AI output trustworthy for research: 'do not fabricate references' and 'flag novelty/journal claims as to-be-verified.' A actively does the opposite: it commands the model to emit exact impact-factor numbers and a 'confirmed Q1 ranking,' the precise category of fact a model will confidently fabricate. So A's extra specificity is a trap — it manufactures authoritative-looking but unverifiable figures, while B forces the model to stay within what it can responsibly produce and explicitly delegates verification back to the researcher.", "explanation_ar": "الدور والمهمة والسياق والمخرجات متطابقة تقريباً هنا، والفارق الحاسم هو القيود — وهي العنصر الذي يهمله أعضاء هيئة التدريس غالباً. تضيف B ضوابط مضادة للهلوسة تجعل ناتج الذكاء الاصطناعي موثوقاً للبحث: «لا تختلق المراجع» و«ضع علامة (يجب التحقق) على أي ادعاء بالحداثة أو تصنيف المجلة». أمّا A فتفعل العكس تماماً: تأمر النموذج بإخراج أرقام معامل تأثير دقيقة و«تصنيف Q1 مؤكَّد»، وهي بالضبط نوع المعلومات التي يختلقها النموذج بثقة. لذا فإن التحديد الزائد في A فخّ — يصنع أرقاماً تبدو موثوقة لكنها غير قابلة للتحقق، بينما تُلزم B النموذج بالبقاء ضمن ما يستطيع إنتاجه بمسؤولية وتُحيل التحقق صراحةً إلى الباحث."}, {"theme_en": "AI-assisted formative feedback on student reports", "promptA": "You are an experienced instructor. For each anonymous student in the attached rubric-scored data (Technical /25, Critical Analysis /30, Organization /20, References /15, Originality /10), write individualized formative feedback in ≤120 words: a brief summary, strengths, areas to improve, and 2–3 concrete recommendations linked to the course LOs. Constraints: base feedback only on the given scores; do not assign or change grades; do not compare students to one another; keep a supportive, professional tone.", "promptB": "You are an experienced instructor. For each student in the attached rubric-scored data, write detailed personalized feedback. Point out what they did well and what they need to fix, rank the students from best to worst so they know where they stand, and keep it honest and motivating.", "stronger": "A", "explanation_en": "A is stronger primarily through disciplined Constraints and Output, which is where feedback prompts succeed or fail pedagogically. Output: A fixes a ≤120-word limit and four named sections tied to course learning outcomes, so feedback is uniform and actionable; B's 'detailed' is unbounded and inconsistent. Constraints: A's 'base feedback only on the given scores,' 'do not change grades,' and 'do not compare students' protect fairness and academic integrity. B does the opposite — it instructs the model to 'rank students from best to worst,' which creates harmful peer comparison, risks de-motivation, and exceeds the data's purpose. 'Honest and motivating' in B is also an unresolved tension with no guidance, whereas A's 'supportive, professional tone' is a clear, single directive.", "explanation_ar": "الصياغة A أقوى أساساً بفضل انضباط القيود والمخرجات، وهنا تحديداً تنجح أو تفشل تربوياً صياغات التغذية الراجعة. المخرجات: A تحدّد سقفاً ≤120 كلمة وأربعة أقسام مسمّاة مرتبطة بمخرجات تعلّم المقرر، فتكون التغذية موحّدة وقابلة للتنفيذ، بينما «مفصّلة» في B غير محدودة وغير متّسقة. القيود: في A «استند فقط إلى الدرجات المعطاة» و«لا تغيّر الدرجات» و«لا تقارن الطلبة» تحمي العدالة والنزاهة الأكاديمية. أمّا B فتفعل العكس — تأمر بـ«ترتيب الطلبة من الأفضل إلى الأسوأ»، ما يخلق مقارنة ضارّة بين الأقران، ويهدّد بالإحباط، ويتجاوز الغرض من البيانات. كما أن «صادقة ومحفّزة» في B توتّر غير محسوم بلا توجيه، في حين أن «نبرة داعمة ومهنية» في A توجيه واحد واضح."}], "slides": [{"kicker": "THE HOOK", "title_en": "Same Question. Two Different Worlds.", "title_ar": "نفس السؤال. عالمان مختلفان.", "bullets": ["Ask AI \"write me MCQs\" and you get generic filler", "Ask AI as an engineer with a framework and you get Q1-grade output", "Today: 2 templates + 7 demos, executed live, AR + EN", "The difference is not the AI. It is the prompt."], "speaker_note": "Open by typing a lazy prompt live, then the structured one. Let the gap land before explaining. Frame the whole session: the AI did not get smarter between the two prompts. You did. Everything that follows is the engineering of that prompt.", "bullets_ar": ["اطلب من الذكاء الاصطناعي «اكتب لي أسئلة اختيار من متعدد» فتحصل على حشوٍ عام", "اطلب منه بوصفك مهندساً يملك إطاراً منهجياً فتحصل على مخرجات بمستوى Q1", "اليوم: قالبان + 7 عروض حية، بالعربية والإنجليزية", "الفارق ليس في الذكاء الاصطناعي، بل في التوجيه."], "speaker_note_ar": "ابدأ بكتابة توجيه كسول مباشرةً، ثم التوجيه المُهيكل. دع الفجوة بينهما تترسّخ قبل أن تشرح. أطّر الجلسة كلها: الذكاء الاصطناعي لم يصبح أذكى بين التوجيهين، بل أنت من تطوّر. وكل ما يلي هو هندسة ذلك التوجيه."}, {"kicker": "THE FRAMEWORK", "title_en": "Five Parts That Change Everything", "title_ar": "خمسة عناصر تُغيّر كل شيء", "bullets": ["Role + Task: who the AI is, and the one action it does", "Context: course, level, data, region, goal", "Output: exact format — table, count, fields", "Constraints: ethics, word limits, no fabricated references"], "speaker_note": "Walk the five parts on one slide. Stress that EVERY result in the workshop came from this one skeleton. Tell faculty: memorize Role-Task-Context-Output-Constraints like a checklist. The two parts they always skip are Context and Constraints, and those are exactly the two that separate hobbyist prompts from professional ones.", "bullets_ar": ["الدور + المهمة: مَن هو الذكاء الاصطناعي، وما الفعل الواحد الذي يؤديه", "السياق: المقرر، المستوى، البيانات، المنطقة، الهدف", "المخرجات: الصيغة المحددة — جدول، عدد، حقول", "القيود: الأخلاقيات، حدود الكلمات، لا مراجع مُختلقة"], "speaker_note_ar": "استعرض العناصر الخمسة في شريحة واحدة. أكّد أن كل نتيجة في ورشة العمل خرجت من هذا الهيكل الواحد. قل لأعضاء هيئة التدريس: احفظوا الدور-المهمة-السياق-المخرجات-القيود كقائمة تحقق. العنصران اللذان يُهملان دائماً هما السياق والقيود، وهما تحديداً ما يفصل توجيهات الهواة عن التوجيهات المهنية."}, {"kicker": "WEAK vs STRONG", "title_en": "Watch the Output Get Smarter", "title_ar": "شاهد المخرجات تصبح أذكى", "bullets": ["Weak: \"Make questions about converters\" → vague, off-level", "Strong: Power Electronics, 3rd-year, Bloom Apply+Analyze, 10 MCQs, ~20 min", "Result: buck D=0.4, Vin=24V → 9.6V; DCM; switching loss", "Add the constraints and the AI does the cognitive leveling for you"], "speaker_note": "Use the DC-DC converter MCQ demo as the contrast. Read the weak prompt, then the strong one with all five parts named. Point out that 'Bloom: Apply & Analyze' alone forces higher-order questions instead of recall. The lesson: constraints are not restrictions, they are instructions that raise quality.", "bullets_ar": ["الضعيف: «اكتب أسئلة عن المحوّلات» ← مبهم وخارج المستوى", "القوي: إلكترونيات قدرة، سنة ثالثة، بلوم تطبيق+تحليل، 10 أسئلة، ~20 دقيقة", "النتيجة: محوّل خافض D=0.4، Vin=24V ← 9.6V؛ نمط DCM؛ خسائر التبديل", "أضف القيود فيتولّى الذكاء الاصطناعي ضبط المستوى المعرفي نيابةً عنك"], "speaker_note_ar": "استخدم عرض أسئلة محوّلات DC-DC كمثال للمقارنة. اقرأ التوجيه الضعيف، ثم القوي بعناصره الخمسة مُسمّاةً. أشِر إلى أن «بلوم: تطبيق وتحليل» وحدها تفرض أسئلة من مستوى أعلى بدل الاسترجاع. الدرس: القيود ليست تقييداً، بل تعليمات ترفع الجودة."}, {"kicker": "LIVE RESULTS · 1", "title_en": "Rubric-Aligned Feedback in Seconds", "title_ar": "تغذية راجعة مُحاذاة للمعايير في ثوانٍ", "bullets": ["Individualized feedback for an anonymous class, ≤120 words each", "Constraints honored: no grades changed, no student comparisons", "Tied to learning outcomes (LO1–LO3), supportive tone", "From raw scores to actionable, fair comments — instantly"], "speaker_note": "Show the S01/S03/S05 feedback cards. Emphasize that the constraints 'data-only, no grades, no comparisons' are what make this ethically usable in a real classroom. This is the demo that wins the room: it saves hours of grading-adjacent work while staying fair and outcome-linked.", "bullets_ar": ["تغذية راجعة فردية لصفٍّ مجهول الهوية، ≤120 كلمة لكل طالب", "القيود محترمة: لا تغيير للدرجات، ولا مقارنة بين الطلبة", "مرتبطة بمخرجات التعلم (LO1–LO3)، وبنبرة داعمة", "من درجات خام إلى تعليقات عادلة وقابلة للتنفيذ — فوراً"], "speaker_note_ar": "اعرض بطاقات التغذية الراجعة للطلبة S01/S03/S05. أكّد أن القيود «اعتمد على البيانات فقط، لا تغيّر الدرجات، لا تقارن» هي ما يجعل هذا قابلاً للاستخدام أخلاقياً في صفٍّ حقيقي. هذا هو العرض الذي يكسب القاعة: يوفّر ساعات من العمل المرتبط بالتصحيح مع بقائه عادلاً ومرتبطاً بالمخرجات."}, {"kicker": "LIVE RESULTS · 2", "title_en": "From Idea to Ranked Research Pipeline", "title_ar": "من فكرة إلى خط أبحاث مُرتَّب", "bullets": ["5 Q1 ideas: AI + renewable energy, MENA, 2023–2026", "AI then reviewed its own ideas like a Q1 reviewer", "Winner: XAI fault diagnosis under desert conditions — 8.6/10", "Clear gap + collectable field data + direct operational impact"], "speaker_note": "Walk the ranking chart: the AI generated ideas, then critically scored them on originality, gap, feasibility, impact. The point for researchers is the self-evaluation step — you can make the model argue against itself before you commit months of work. Idea 1 won because the gap and data feasibility were strongest.", "bullets_ar": ["5 أفكار بمستوى Q1: ذكاء اصطناعي + طاقة متجددة، منطقة الشرق الأوسط وشمال إفريقيا، 2023–2026", "ثم راجع الذكاء الاصطناعي أفكاره الخاصة كمُحكِّم Q1", "الفائزة: تشخيص الأعطال بالذكاء الاصطناعي القابل للتفسير في الظروف الصحراوية — 8.6/10", "فجوة واضحة + بيانات ميدانية قابلة للجمع + أثر تشغيلي مباشر"], "speaker_note_ar": "استعرض مخطط الترتيب: ولّد الذكاء الاصطناعي الأفكار، ثم قيّمها نقدياً على الأصالة والفجوة والجدوى والأثر. النقطة المهمة للباحثين هي خطوة التقييم الذاتي — يمكنك أن تجعل النموذج يجادل نفسه قبل أن تلتزم بشهور من العمل. فازت الفكرة الأولى لأن الفجوة وجدوى البيانات كانتا الأقوى."}, {"kicker": "LIVE RESULTS · 3", "title_en": "Sit in the Editor-in-Chief's Chair", "title_ar": "اجلس في كرسي رئيس التحرير", "bullets": ["AI desk-screens titles before peer review", "Decisions: Send to review · Major revision · Desk reject", "\"AI Tools & Research Productivity\" → rejected as too generic", "Then it rewrites the winning title to be sharper"], "speaker_note": "This is the surprising-perspective demo. Faculty submit to Q1 journals but rarely think like the editor who screens them. The AI predicts the desk decision and tells you WHY a title gets rejected before you waste a submission. Show the generic title getting desk-rejected, then the improved Delphi/Arabic-context rewrite.", "bullets_ar": ["الذكاء الاصطناعي يُجري فرزاً مكتبياً للعناوين قبل مرحلة التحكيم", "القرارات: إرسال للتحكيم · مراجعة كبرى · رفض مكتبي", "«أدوات الذكاء الاصطناعي وإنتاجية البحث» ← مرفوض لكونه عاماً جداً", "ثم يعيد صياغة العنوان الفائز ليكون أكثر حدّةً ودقة"], "speaker_note_ar": "هذا هو العرض ذو المنظور المفاجئ. يقدّم أعضاء هيئة التدريس أبحاثهم لمجلات Q1 لكنهم نادراً ما يفكرون بعقلية المحرّر الذي يفرزها. يتنبأ الذكاء الاصطناعي بقرار الفرز المكتبي ويخبرك لماذا يُرفض العنوان قبل أن تُهدر فرصة تقديم. اعرض العنوان العام وهو يُرفض مكتبياً، ثم الصياغة المُحسّنة المعتمدة على منهج Delphi والسياق العربي."}, {"kicker": "ETHICS & VERIFICATION", "title_en": "The AI Drafts. You Are Accountable.", "title_ar": "الذكاء الاصطناعي يُسوّد. أنت المسؤول.", "bullets": ["Never trust references — verify every citation against Scopus/WoS", "Novelty claims are flagged, not assumed; nothing fabricated", "Mentor mode asks questions; it does not write the paper for you", "Disclose AI use; keep the human as the final author"], "speaker_note": "The non-negotiable slide. Every demo carried the constraint 'no fabricated references' and 'verify novelty'. Stress that the mentor-mode demo deliberately refused to answer, only asked sharpening questions — that is the healthy relationship. Hallucinated citations are the number-one way faculty get burned; make verification a habit, not an afterthought.", "bullets_ar": ["لا تثق بالمراجع أبداً — تحقّق من كل اقتباس في Scopus/WoS", "ادعاءات الحداثة تُوسَم للتحقق لا تُسلَّم بها؛ ولا شيء مُختلق", "وضع الموجّه يطرح الأسئلة؛ ولا يكتب البحث نيابةً عنك", "أفصِح عن استخدام الذكاء الاصطناعي؛ وابقَ المؤلف النهائي"], "speaker_note_ar": "هذه الشريحة غير قابلة للتنازل. كل عرض حمل القيد «لا مراجع مُختلقة» و«تحقّق من الحداثة». أكّد أن عرض وضع الموجّه رفض الإجابة عمداً، واكتفى بطرح أسئلة تُشحذ التفكير — وهذه هي العلاقة الصحية. الاقتباسات المُهلوَسة هي السبب الأول لوقوع أعضاء هيئة التدريس في المشكلات؛ اجعل التحقق عادةً لا أمراً ثانوياً."}, {"kicker": "CALL TO ACTION", "title_en": "Pick One Task. Engineer One Prompt. This Week.", "title_ar": "اختر مهمة واحدة. صُغ موجِّهاً واحداً. هذا الأسبوع.", "bullets": ["Take one real task: a quiz, a rubric, a research gap", "Write it with all five parts — especially Context + Constraints", "Verify the output, then refine the prompt, not the answer", "Save your best prompts — build a personal template library"], "speaker_note": "Close with a concrete commitment. Ask each professor to leave with one prompt they will use this week. The skill is reusable: a good prompt is an asset you save and reshare with your department. Invite them to swap templates with colleagues. End on the one-liner from slide 1: the difference was never the AI — it was the prompt.", "bullets_ar": ["خُذ مهمة حقيقية واحدة: اختباراً، أو معيار تقييم، أو فجوة بحثية", "اكتبها بالعناصر الخمسة كاملةً — خاصةً السياق والقيود", "تحقّق من المخرجات، ثم نقّح التوجيه لا الإجابة", "احفظ أفضل توجيهاتك — وابنِ مكتبة قوالب شخصية"], "speaker_note_ar": "اختم بالتزام ملموس. اطلب من كل أستاذ أن يغادر ومعه توجيه واحد سيستخدمه هذا الأسبوع. المهارة قابلة لإعادة الاستخدام: التوجيه الجيد أصلٌ تحفظه وتعيد مشاركته مع قسمك. ادعهم إلى تبادل القوالب مع الزملاء. اختم بجملة الشريحة الأولى: الفارق لم يكن يوماً في الذكاء الاصطناعي — بل في التوجيه."}], "presenterScript": "[Open in Projector Mode, F1 all switches ON, the PV activity glowing, gauge at 100.] \"Colleagues — حضراتكم — this is ONE prompt. Same request you'd type for a class activity. Watch the gauge: one hundred percent, publication-grade, a full Jigsaw activity in sixty minutes. Now — which part is doing the work? Let's run a controlled experiment. [Press 5.] I just removed Constraints — and look: the model invented a reference. Al-Rawi and Hassan, 2024 — it does not exist. This is the fear every one of us has about AI, live on screen. [Press 4.] Drop the Output format — our clean table dissolves into mush. [Press 0 — green snap back to 100.] Structure is not decoration; it is engineering. هندسة. Now YOU judge. [Jump to vote, V.] Two prompts, same converter exam. Lazy on the left, engineered on the right. Vote — phones or hands. [Reveal.] The room said B — and B gives you a real answer key; A gives you three vague questions and no key. Last test: become the reviewer. [Start Spot-the-Hallucination, S.] Three traps in this abstract — a fake citation, an impossible ninety-nine-point-nine-seven percent, a causal overclaim. Find them. [Click as they call out.] You caught them — because the human reviewer is irreplaceable. That is the whole workshop: structure your prompt, and verify like the scholar you already are. شكراً.\"", "labels": {"prompt_builder_title": {"en": "Prompt Builder", "ar": "أداة بناء التوجيه"}, "weak_prompt_toggle": {"en": "Weak prompt", "ar": "توجيه ضعيف"}, "strong_prompt_toggle": {"en": "Strong prompt", "ar": "توجيه قوي"}, "run_prompt_button": {"en": "Run prompt", "ar": "شغّل التوجيه"}, "quality_meter_label": {"en": "Prompt quality", "ar": "جودة التوجيه"}, "simulated_ai_output_caption": {"en": "Simulated AI response (offline demo)", "ar": "استجابة ذكاء اصطناعي محاكاة (عرض دون اتصال)"}, "quiz_title": {"en": "Quick check: test your understanding", "ar": "اختبار سريع: تحقّق من فهمك"}, "quiz_reveal_answer_button": {"en": "Reveal answer", "ar": "أظهِر الإجابة"}, "feedback_correct": {"en": "Correct! Well done.", "ar": "إجابة صحيحة! أحسنت."}, "feedback_not_quite": {"en": "Not quite — try again.", "ar": "ليست دقيقة تمامًا — حاول مرة أخرى."}, "presenter_mode_button": {"en": "Presenter mode", "ar": "وضع العرض التقديمي"}, "next_slide_hint": {"en": "Next slide", "ar": "الشريحة التالية"}, "previous_slide_hint": {"en": "Previous slide", "ar": "الشريحة السابقة"}, "try_it_yourself_cta": {"en": "Now try it yourself", "ar": "والآن جرّبها بنفسك"}, "footer_tagline": {"en": "Prompt Engineering for Teaching & Research — Al-Shaab University, College of Engineering", "ar": "هندسة التوجيهات للتدريس والبحث — جامعة الشعب، كلية الهندسة"}}, "hallucination": {"title_en": "Spot the Hallucination — you are the Q1 reviewer", "title_ar": "اكتشف الهلوسة — أنتم محكّمو المجلة", "intro_en": "This abstract looks polished. Three things are wrong: a fabricated reference, an impossible statistic, and a correlation reported as causation. Click the sentences you would flag.", "intro_ar": "يبدو هذا الملخّص متقَناً. لكن فيه ثلاثة أخطاء: مرجع مُختلق، وإحصائية مستحيلة، وارتباط يُقدَّم على أنه سببية. انقر الجمل التي ستضع عليها ملاحظة.", "sentences": [{"t": "Photovoltaic arrays in desert climates suffer accelerated efficiency loss from dust accumulation and high operating temperatures.", "trap": false}, {"t": "Explainable-AI fault studies remain scarce for soiling-dominated regions (Al-Rawi & Hassan, 2024, Journal of Solar Engineering, 41(3), 220–235).", "trap": true, "kind": "Fabricated reference", "why_en": "This citation does not exist — the journal/volume/pages follow a plausible pattern the model invented. Always verify every reference directly in Scopus or Web of Science.", "why_ar": "هذا المرجع غير موجود — اسم المجلة والمجلد والصفحات نمط مُقنع اختلقه النموذج. تحقّق دائماً من كل مرجع مباشرةً في Scopus أو Web of Science."}, {"t": "Our convolutional model achieved 99.97% fault-classification accuracy on the full dataset, with no held-out test set.", "trap": true, "kind": "Impossible statistic / overclaim", "why_en": "99.97% with no held-out test set is a textbook overfitting red flag. Accuracy must be reported on unseen data with a train/validation/test split.", "why_ar": "نسبة 99.97% دون مجموعة اختبار مستقلة هي مؤشر كلاسيكي على فرط المطابقة (overfitting). يجب قياس الدقة على بيانات لم يرها النموذج عبر تقسيم تدريب/تحقق/اختبار."}, {"t": "Because accuracy correlated with panel temperature, we conclude that higher temperature directly causes the misclassifications.", "trap": true, "kind": "Correlation reported as causation", "why_en": "Correlation is not causation. A controlled study is needed before claiming temperature *causes* misclassification — confounders (dust, irradiance) may drive both.", "why_ar": "الارتباط لا يعني السببية. يلزم تصميم تجريبي مضبوط قبل ادّعاء أن الحرارة *تُسبّب* الخطأ — فقد تقود عوامل مُربِكة (الغبار، الإشعاع) كليهما."}, {"t": "Field validation across multiple sites and a public benchmark are needed before operational deployment.", "trap": false}], "clean_en": "Explainable-AI fault studies remain scarce for soiling-dominated regions, and recent literature should be verified directly in Scopus/WoS before citing. Our convolutional model achieved 96.2% accuracy on a held-out test set. Accuracy correlated with panel temperature, suggesting temperature may be a contributing factor that warrants a controlled study.", "clean_ar": "تظل دراسات الذكاء الاصطناعي القابل للتفسير نادرة في المناطق التي يغلب فيها الغبار، وينبغي التحقق من الأدبيات الحديثة مباشرةً في Scopus/WoS قبل الاقتباس. حقّق نموذجنا دقة 96.2% على مجموعة اختبار مستقلة. ارتبطت الدقة بدرجة حرارة اللوح، مما يرجّح أن الحرارة عامل مساهم يستحق دراسة مضبوطة."}, "degrade": {"role": {"w": 15, "en": "Tone downgrade: generic assistant voice, not professor-level expertise.", "ar": "تراجع في النبرة: صوت مساعد عام وليس بخبرة أستاذ جامعي."}, "task": {"w": 40, "en": "MELTDOWN — no actionable task. The model guesses what you want.", "ar": "انهيار — لا توجد مهمة واضحة. النموذج يخمّن ما تريد."}, "context": {"w": 20, "en": "Specifics fade: a generic activity for any course, any country, any level.", "ar": "تتلاشى التفاصيل: نشاط عام يصلح لأي مقرر وأي بلد وأي مستوى."}, "output": {"w": 22, "en": "Structure dissolves: the clean table becomes a run-on prose paragraph.", "ar": "تتفكك البنية: يتحول الجدول المنظّم إلى فقرة نثرية متصلة."}, "constraints": {"w": 28, "en": "⚠ SIMULATED FAILURE — fabricated reference inserted: \"Al-Rawi & Hassan (2024), J. Solar Eng. 41(3), 220–235\" · word-count guard lost (118→412) · ≤60-min limit gone.", "ar": "⚠ فشل محاكى — أُدرج مرجع مُختلق: «Al-Rawi & Hassan (2024)» · فقدان ضبط عدد الكلمات (118→412) · زال حدّ الستين دقيقة."}}, "verdictBands": [{"min": 90, "en": "Publication-grade", "ar": "بمستوى النشر", "color": "var(--good)"}, {"min": 70, "en": "Classroom-ready", "ar": "جاهز للصف", "color": "var(--good)"}, {"min": 45, "en": "Developing", "ar": "قيد التطوير", "color": "var(--warn)"}, {"min": 0, "en": "Poor", "ar": "ضعيف", "color": "var(--bad)"}], "ui": {"deskLede_en": "One engineered prompt. Flip the five switches and watch the quality gauge — and the AI’s answer — change in real time. Turn off <b>Constraints</b> and a fabricated reference appears (clearly labelled <i>simulated</i>). <span class=\"mono\" style=\"color:var(--muted)\">Presenter keys: 1–5 toggle · 0 reset · R randomize</span>", "deskLede_ar": "توجيه واحد مُهندَس. بدّل المفاتيح الخمسة وراقب مؤشر الجودة — وإجابة الذكاء الاصطناعي — تتغيّر لحظيّاً. أطفئ <b>القيود</b> فيظهر مرجع مُختلَق (مُعلّم بوضوح أنه <i>مُحاكاة</i>). <span class=\"mono\" style=\"color:var(--muted)\">مفاتيح العرض: 1–5 تبديل · 0 إعادة · R عشوائي</span>", "halBanner_en": "⚠ Training exercise: this abstract contains three deliberately planted errors — including a fabricated citation. Nothing here is a real reference.", "halBanner_ar": "⚠ تمرين تدريبي: يحتوي هذا الملخّص على ثلاثة أخطاء مزروعة عمدًا — منها اقتباس مُختلَق. لا شيء هنا مرجع حقيقي."}};</script>
+<script>
+/* ===== base interactions (theme, progress, reveal, counters, anatomy, scrollspy, charts) ===== */
+const root=document.documentElement, tb=document.getElementById('themeBtn');
+tb.onclick=()=>{const l=root.getAttribute('data-theme')==='light';root.setAttribute('data-theme',l?'dark':'light');tb.textContent=l?'☀ Light':'🌙 Dark';};
+const prog=document.getElementById('progress');
+addEventListener('scroll',()=>{const h=document.documentElement;prog.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.10});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+function animateCount(el){const t=+el.dataset.count,suf=el.dataset.suffix||'';let st=null,d=1100;
+  function step(ts){if(!st)st=ts;const p=Math.min((ts-st)/d,1);el.textContent=Math.round(p*t)+suf;if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
+const sio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){animateCount(e.target);sio.unobserve(e.target);}}),{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>sio.observe(el));
+const steps=document.querySelectorAll('.astep'),segs=document.querySelectorAll('#livePrompt .seg');
+function setSeg(n){steps.forEach(s=>s.classList.toggle('on',s.dataset.seg===n));segs.forEach(s=>s.classList.toggle('hot',s.dataset.seg===n));}
+steps.forEach(s=>{s.addEventListener('mouseenter',()=>setSeg(s.dataset.seg));s.addEventListener('click',()=>setSeg(s.dataset.seg));});
+const links=[...document.querySelectorAll('#tocWrap a')];
+const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+addEventListener('scroll',()=>{let idx=0;secs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<170)idx=i;});links.forEach((a,i)=>a.classList.toggle('active',i===idx));});
+function drawBars(){const data=[['S01',96],['S02',82],['S03',68],['S04',59],['S05',84]];const svg=document.getElementById('barChart');if(!svg)return;
+  const W=460,H=240,pad=34,bw=46,gap=(W-pad*2-bw*data.length)/(data.length-1),max=100;let h='';
+  [0,25,50,75,100].forEach(v=>{const y=H-pad-(v/max)*(H-pad*2);h+=`<line class="axis" x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" opacity=".4"/><text class="glabel" x="6" y="${y+4}">${v}</text>`;});
+  data.forEach((d,i)=>{const x=pad+i*(bw+gap),full=(d[1]/max)*(H-pad*2),y=H-pad-full;
+    h+=`<rect x="${x}" y="${H-pad}" width="${bw}" height="0" rx="7" fill="url(#g1)" class="bar" data-h="${full}" data-y="${y}"/>`;
+    h+=`<text class="vlabel" x="${x+bw/2}" y="${y-8}" text-anchor="middle" opacity="0" data-fade>${d[1]}</text>`;
+    h+=`<text class="glabel" x="${x+bw/2}" y="${H-pad+18}" text-anchor="middle">${d[0]}</text>`;});
+  svg.innerHTML=`<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ea8fe"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>${h}`;return svg;}
+function drawRank(){const data=[['Idea 1',8.6,true],['Idea 2',7.9],['Idea 3',7.9],['Idea 4',7.4],['Idea 5',7.1]];const svg=document.getElementById('rankChart');if(!svg)return;
+  const W=460,padL=60,padR=40,top=14,rowH=40,max=10;let h='';
+  data.forEach((d,i)=>{const y=top+i*rowH,w=(d[1]/max)*(W-padL-padR);
+    h+=`<text class="glabel" x="${padL-8}" y="${y+18}" text-anchor="end" fill="var(--ink)" font-weight="600">${d[0]}</text>`;
+    h+=`<rect x="${padL}" y="${y+4}" width="${W-padL-padR}" height="22" rx="6" fill="var(--line)" opacity=".4"/>`;
+    h+=`<rect x="${padL}" y="${y+4}" width="0" height="22" rx="6" fill="${d[2]?'url(#gw)':'url(#g2)'}" class="bar" data-w="${w}"/>`;
+    h+=`<text class="vlabel" x="${padL+8}" y="${y+20}" opacity="0" data-fade>${d[1].toFixed(1)}${d[2]?'  🏆':''}</text>`;});
+  svg.innerHTML=`<defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22d3ee"/></linearGradient><linearGradient id="gw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs>${h}`;return svg;}
+function runChart(svg,mode){if(!svg)return;svg.querySelectorAll('.bar').forEach(b=>requestAnimationFrame(()=>{if(mode==='v'){b.setAttribute('y',b.dataset.y);b.setAttribute('height',b.dataset.h);}else{b.setAttribute('width',b.dataset.w);}}));
+  svg.querySelectorAll('[data-fade]').forEach(t=>setTimeout(()=>t.setAttribute('opacity','1'),700));}
+const bar=drawBars(),rank=drawRank();
+const cio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){if(e.target===bar)runChart(bar,'v');if(e.target===rank)runChart(rank,'h');cio.unobserve(e.target);}}),{threshold:.3});
+if(bar)cio.observe(bar);if(rank)cio.observe(rank);
+</script>
+
+<script>
+/* ===== INTERACTIVE SHOW (F1 desk · F2 showdown · F3 hallucination · F5 presenter · lang) ===== */
+(function(){
+  const D=WORKSHOP_DATA, L=D.labels;
+  let lang='en';
+  const PARTS=[
+    {k:'role',en:'Role',ar:'الدور',key:'1'},
+    {k:'task',en:'Task',ar:'المهمة',key:'2'},
+    {k:'context',en:'Context',ar:'السياق',key:'3'},
+    {k:'output',en:'Output',ar:'المخرجات',key:'4'},
+    {k:'constraints',en:'Constraints',ar:'القيود',key:'5'},
+  ];
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>');
+  const isSep=r=>/^\s*\|[\s:\|\-]*\-[\s:\|\-]*\|?\s*$/.test(r);
+  function md(s){const lines=String(s).split('\n');let html='',i=0;
+    while(i<lines.length){let ln=lines[i];
+      if(ln.trim().startsWith('|')){const block=[];while(i<lines.length&&lines[i].trim().startsWith('|')){if(!isSep(lines[i]))block.push(lines[i]);i++;}
+        html+='<table class="md">';block.forEach((r,ri)=>{const cells=r.split('|').slice(1,-1).map(c=>c.trim());const tag=ri===0?'th':'td';
+          html+='<tr>'+cells.map(c=>`<${tag}>${inline(c)}</${tag}>`).join('')+'</tr>';});html+='</table>';continue;}
+      if(ln.trim())html+=`<p>${inline(ln)}</p>`;i++;}
+    return html;}
+  function prose(s){return esc(String(s).replace(/\*\*/g,'').split('\n').filter(l=>l.trim()&&!isSep(l)).map(l=>l.replace(/\|/g,' · ')).join(' ').replace(/\s+/g,' ').trim());}
+  function verdict(score){for(const b of D.verdictBands){if(score>=b.min)return b;}return D.verdictBands[D.verdictBands.length-1];}
+
+  /* ---------- F1 MIXING DESK ---------- */
+  let scn=0;
+  const state={role:true,task:true,context:true,output:true,constraints:true};
+  function deskOnPick(i){scn=i;renderDesk();}
+  function buildScnTabs(elId,onPick){const el=document.getElementById(elId);el.innerHTML='';
+    const active=(elId==='scnTabs'?scn:duelScn);
+    D.playground.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='scn-tab'+(i===active?' on':'');
+      b.setAttribute('role','tab');b.setAttribute('aria-selected',i===active);
+      b.textContent=lang==='ar'?s.title_ar:s.title_en;b.onclick=()=>onPick(i);el.appendChild(b);});}
+  function renderSwitches(){const wrap=document.getElementById('switches');wrap.innerHTML='';
+    PARTS.forEach(p=>{const row=document.createElement('button');row.type='button';row.className='switch-row';
+      row.setAttribute('role','switch');row.setAttribute('aria-checked',state[p.k]);
+      row.setAttribute('aria-label',(lang==='ar'?p.ar:p.en));
+      row.innerHTML=`<span class="switch ${state[p.k]?'on':''}"><span class="knob"></span></span>
+        <span class="nm">${lang==='ar'?p.ar:p.en}<small>${lang==='ar'?p.en:p.ar}</small></span>
+        <span class="key">${p.key}</span>`;
+      row.onclick=()=>toggle(p.k);wrap.appendChild(row);});}
+  function toggle(k){state[k]=!state[k];renderDesk();}
+  function setAll(v){PARTS.forEach(p=>state[p.k]=v);renderDesk();}
+  function renderDeskPrompt(){const s=D.playground[scn];const box=document.getElementById('deskPrompt');box.className='deskprompt'+(lang==='ar'?' ar':'');
+    box.innerHTML=PARTS.map(p=>{const on=state[p.k];const txt=on?esc(s.strong[p.k]):(lang==='ar'?'— (مُزال)':'— (removed)');
+      return `<div class="seg ${on?'':'off'}"><span class="lbl"># ${lang==='ar'?p.ar:p.en}</span><br>${txt}</div>`;}).join('<br>');}
+  function renderDesk(){
+    buildScnTabs('scnTabs',deskOnPick);
+    document.getElementById('deskLede').innerHTML=lang==='ar'?D.ui.deskLede_ar:D.ui.deskLede_en;
+    renderSwitches();renderDeskPrompt();
+    const s=D.playground[scn];
+    let score=s.strong_score;const offParts=PARTS.filter(p=>!state[p.k]).map(p=>p.k);
+    offParts.forEach(k=>{score-=D.degrade[k].w;});
+    if(!state.task)score=Math.min(score,10);
+    score=Math.max(6,Math.round(score));
+    /* banners in priority order */
+    const order=['constraints','output','context','role','task'];
+    let banners='';
+    order.forEach(k=>{if(!state[k]){const cls=(k==='constraints'||k==='task')?'red':'amber';
+      banners+=`<div class="deg ${cls}">${lang==='ar'?D.degrade[k].ar:D.degrade[k].en}</div>`;}});
+    let body;
+    if(!state.task){body=`<p style="color:var(--bad)"><b>${lang==='ar'?'النموذج يخمّن — لا مخرجات قابلة للاستخدام.':'The model guesses — no usable output.'}</b></p>`;}
+    else if(!state.output){body=`<p>${prose(s.strong_output)}</p>`;}
+    else if(offParts.length===0){body=md(s.strong_output);}
+    else {body=md(s.strong_output);}
+    const v=verdict(score);
+    document.getElementById('aiBody').innerHTML=banners+body;
+    document.getElementById('aiBadge').innerHTML = offParts.length===0
+      ? `<span style="color:var(--good)">${lang==='ar'?'صالح كما هو ✓':'Usable as-is ✓'}</span>`
+      : `<span style="color:var(--warn)">${offParts.length} ${lang==='ar'?'عنصر مفقود':'parts missing'}</span>`;
+    document.getElementById('aiCap').textContent=lang==='ar'?L.simulated_ai_output_caption.ar:L.simulated_ai_output_caption.en;
+    /* gauge */
+    document.getElementById('arcVal').setAttribute('stroke-dashoffset',100-score);
+    document.getElementById('arcVal').setAttribute('stroke',v.color);
+    document.getElementById('needle').style.transform=`rotate(${score/100*180-90}deg)`;
+    document.getElementById('gaugeNum').textContent=score;
+    document.getElementById('gaugeNum').style.color=v.color;
+    const vd=document.getElementById('gaugeVerdict');vd.textContent=(lang==='ar'?v.ar:v.en);vd.style.color=v.color;
+    document.getElementById('deskTitle').textContent=lang==='ar'?'لوحة مزج التوجيه':'The Prompt Mixing Desk';
+  }
+
+  /* ---------- F2 SHOWDOWN ---------- */
+  let duelScn=1,votesA=0,votesB=0,revealed=false;
+  const CRIT={en:['Clear format?','Answer key / structure?','Difficulty controlled?','No vague repetition?'],
+              ar:['صيغة واضحة؟','مفتاح/بنية؟','صعوبة مضبوطة؟','بلا تكرار مبهم؟']};
+  function renderDuel(){const s=D.playground[duelScn];buildScnTabs('duelTabs',pickDuel);
+    document.getElementById('prA').textContent=s.weak_prompt;
+    document.getElementById('prB').textContent=[s.strong.role,s.strong.task,s.strong.context,s.strong.output,s.strong.constraints].join('  ·  ');
+    document.getElementById('outA').innerHTML='';document.getElementById('outB').innerHTML='';
+    document.getElementById('critA').innerHTML='';document.getElementById('critB').innerHTML='';
+    document.getElementById('roomVerdict').textContent='';revealed=false;
+    document.getElementById('voteA').textContent=(lang==='ar'?'صوّت أ — ضعيف ✋':'Vote A — lazy ✋');
+    document.getElementById('voteB').textContent=(lang==='ar'?'صوّت ب — مُهندَس ✋':'Vote B — engineered ✋');
+    document.getElementById('revealBtn').textContent=(lang==='ar'?'▶ اكشف المخرجات':'▶ Reveal both outputs');
+    drawTug();}
+  function drawTug(){document.getElementById('tugA').style.flexGrow=votesA+1;document.getElementById('tugB').style.flexGrow=votesB+1;
+    document.getElementById('cntA').textContent=votesA;document.getElementById('cntB').textContent=votesB;}
+  function pickDuel(i){duelScn=i;votesA=0;votesB=0;renderDuel();}
+  function typeInto(el,text,cb){el.textContent='';let i=0;const iv=setInterval(()=>{el.textContent+=text[i++]||'';if(i>=text.length){clearInterval(iv);cb&&cb();}},10);}
+  function reveal(){if(revealed)return;revealed=true;const s=D.playground[duelScn];
+    typeInto(document.getElementById('outA'),prose(s.weak_output).slice(0,420),()=>{
+      const c=document.getElementById('critA');c.innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--bad)">✗</span> ${t}</div>`).join('');});
+    typeInto(document.getElementById('outB'),prose(s.strong_output).slice(0,520),()=>{
+      const c=document.getElementById('critB');c.innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--good)">✓</span> ${t}</div>`).join('');
+      const won=votesB>=votesA;document.getElementById('roomVerdict').innerHTML=
+        (lang==='ar'?`الغرفة اختارت <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'ب':'أ'}</b> — والإجابة: <b style="color:var(--good)">ب</b> أقوى (سياق + مخرجات + قيود).`
+                    :`Room picked <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'B':'A'}</b> — verdict: <b style="color:var(--good)">B</b> wins (context + output + constraints).`);
+    });}
+  document.getElementById('voteA').onclick=()=>{votesA++;drawTug();};
+  document.getElementById('voteB').onclick=()=>{votesB++;drawTug();};
+  document.getElementById('revealBtn').onclick=reveal;
+  document.getElementById('resetVote').onclick=()=>{votesA=0;votesB=0;renderDuel();};
+
+  /* ---------- F3 HALLUCINATION ---------- */
+  let found=0;
+  function renderHal(){const H=D.hallucination;found=0;
+    document.getElementById('halTitle').textContent=lang==='ar'?H.title_ar:H.title_en;
+    document.getElementById('halIntro').textContent=lang==='ar'?H.intro_ar:H.intro_en;
+    document.getElementById('halBanner').textContent=lang==='ar'?D.ui.halBanner_ar:D.ui.halBanner_en;
+    const wrap=document.getElementById('abstract');wrap.className='abstract'+(lang==='ar'?' ar':'');
+    wrap.innerHTML=H.sentences.map((s,i)=>`<button type="button" class="s" data-i="${i}">${esc(s.t)}</button>`).join(' ');
+    wrap.querySelectorAll('.s').forEach(sp=>{sp.onclick=()=>{const i=+sp.dataset.i;const sen=H.sentences[i];
+      if(sen.trap){if(sp.classList.contains('found'))return;sp.classList.add('found');found++;
+        document.getElementById('foundN').textContent=found;
+        const pop=document.createElement('div');pop.className='pop';
+        pop.innerHTML=`<b>${esc(sen.kind)}.</b> ${esc(lang==='ar'?sen.why_ar:sen.why_en)}`;sp.after(pop);
+        if(found>=3)document.getElementById('stamp').classList.add('show');}
+      else{sp.classList.add('wrong','shake');setTimeout(()=>sp.classList.remove('wrong','shake'),550);}};});
+    document.getElementById('foundN').textContent=0;document.getElementById('stamp').classList.remove('show');
+    document.getElementById('stamp').textContent=lang==='ar'?'رفض أوّلي':'Desk Reject';
+    document.getElementById('rescueBtn').textContent=lang==='ar'?'🛟 الإنقاذ بالتحقق':'🛟 Rescue with verification';
+    document.getElementById('rescueBox').innerHTML='';}
+  document.getElementById('rescueBtn').onclick=()=>{const H=D.hallucination;
+    document.getElementById('rescueBox').innerHTML=`<div class="prompt-box" style="border-left-color:var(--good)"><span class="tag" style="color:var(--good)">${lang==='ar'?'النسخة المُتحقَّقة':'Verified, corrected version'}</span>${esc(lang==='ar'?H.clean_ar:H.clean_en)}</div>`;};
+
+  /* ---------- F5 PRESENTER ---------- */
+  let pIdx=0,showNotes=false;const pm=document.getElementById('pmode');
+  function renderSlide(){const s=D.slides[pIdx];const body=document.getElementById('pBody');const ar=lang==='ar';
+    const bullets=ar&&s.bullets_ar?s.bullets_ar:s.bullets;
+    const note=ar&&s.speaker_note_ar?s.speaker_note_ar:s.speaker_note;
+    const primary=ar?esc(s.title_ar):esc(s.title_en);
+    const secondary=ar?esc(s.title_en):esc(s.title_ar);
+    body.dir=ar?'rtl':'ltr';
+    body.innerHTML=`<div class="kicker">${esc(s.kicker)}</div>
+      <h2 class="ptitle"${ar?' style="font-family:\'IBM Plex Sans Arabic\',sans-serif;letter-spacing:0"':''}>${primary}</h2>
+      <div class="ptitle-ar"${ar?' style="direction:ltr;font-family:\'Space Grotesk\',sans-serif"':''}>${secondary}</div>
+      <ul>${bullets.map((b,i)=>`<li style="animation-delay:${i*.09}s">${esc(b)}</li>`).join('')}</ul>
+      ${showNotes?`<div class="note-line">🗒 ${esc(note)}</div>`:''}`;
+    document.getElementById('pCount').textContent=`${pIdx+1} / ${D.slides.length}`;
+    const dots=document.getElementById('pDots');dots.innerHTML=D.slides.map((_,i)=>`<span class="dot2 ${i===pIdx?'on':''}"></span>`).join('');}
+  function openP(){showNotes=false;pm.classList.add('open');pIdx=0;renderSlide();}
+  function closeP(){pm.classList.remove('open');}
+  function nav(d){pIdx=Math.max(0,Math.min(D.slides.length-1,pIdx+d));renderSlide();}
+  document.getElementById('presentBtn').onclick=openP;
+  document.getElementById('presentBtn2').onclick=openP;
+  document.getElementById('pNext').onclick=()=>nav(1);
+  document.getElementById('pPrev').onclick=()=>nav(-1);
+  document.getElementById('pExit').onclick=closeP;
+  document.getElementById('pNote').onclick=()=>{showNotes=!showNotes;document.getElementById('pNote').textContent=showNotes?'🗒 Hide note':'🗒 Show note on screen';renderSlide();};
+
+  /* ---------- DESK TOOLS ---------- */
+  function randomize(){PARTS.forEach(p=>state[p.k]=Math.random()>0.4);renderDesk();}
+  document.getElementById('deskReset').onclick=()=>setAll(true);
+  document.getElementById('deskRandom').onclick=randomize;
+  document.getElementById('deskOff').onclick=()=>setAll(false);
+
+  /* ---------- ANATOMY a11y (keyboard) ---------- */
+  document.querySelectorAll('.astep').forEach(s=>{s.tabIndex=0;s.setAttribute('role','button');
+    s.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();s.click();}});});
+
+  /* ---------- LANGUAGE ---------- */
+  function applyLang(){const ar=lang==='ar';
+    ['desk','showdown','hallucinate'].forEach(id=>{const el=document.getElementById(id);el.dir=ar?'rtl':'ltr';el.lang=ar?'ar':'en';});
+    pm.dir=ar?'rtl':'ltr';
+    const pmTxt='▶ '+(ar?L.presenter_mode_button.ar:L.presenter_mode_button.en);
+    document.getElementById('presentBtn').textContent=pmTxt;document.getElementById('presentBtn2').textContent=pmTxt;
+    const cp=document.getElementById('ctaPill');if(cp)cp.textContent=ar?L.try_it_yourself_cta.ar:L.try_it_yourself_cta.en;}
+  function renderAll(){applyLang();renderDesk();renderDuel();renderHal();}
+  document.getElementById('langBtn').onclick=()=>{lang=lang==='ar'?'en':'ar';
+    document.getElementById('langBtn').textContent=lang==='ar'?'EN / ع':'ع / EN';renderAll();};
+
+  /* ---------- GLOBAL KEYBOARD ---------- */
+  addEventListener('keydown',e=>{
+    if(pm.classList.contains('open')){
+      if(['ArrowRight',' ','ArrowLeft','Escape'].includes(e.key))e.preventDefault();
+      if(e.key==='ArrowRight'||e.key===' ')nav(1);
+      else if(e.key==='ArrowLeft')nav(-1);
+      else if(e.key==='Escape')closeP();
+      return;}
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    const ae=document.activeElement;
+    if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.isContentEditable))return;
+    const k=e.key.toLowerCase();
+    if(k==='p'){openP();return;}
+    if(k==='v'){document.getElementById('showdown').scrollIntoView();return;}
+    if(k==='s'){document.getElementById('hallucinate').scrollIntoView();return;}
+    if(k==='r'){randomize();document.getElementById('desk').scrollIntoView();return;}
+    if(k==='0'){setAll(true);document.getElementById('desk').scrollIntoView();return;}
+    const p=PARTS.find(x=>x.key===e.key);if(p){toggle(p.k);document.getElementById('desk').scrollIntoView();}
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
