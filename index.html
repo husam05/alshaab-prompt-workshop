@@ -257,6 +257,23 @@
   .check b{display:block;font-size:14px}
   .check small{color:var(--muted);font-size:12px}
 
+  /* key modal + live console */
+  .keymodal{position:fixed;inset:0;z-index:210;display:none;align-items:center;justify-content:center;background:rgba(3,6,14,.72);backdrop-filter:blur(6px)}
+  .keymodal.open{display:flex}
+  .keybox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:540px;width:92%;box-shadow:var(--shadow)}
+  .keybox h3{margin:0 0 8px;font-family:'Space Grotesk',sans-serif}
+  .keybox input{width:100%;background:#05080f;border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:14px;margin:10px 0}
+  [data-theme="light"] .keybox input{background:#fff}
+  .keyrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .console-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .console-grid .fld{display:flex;flex-direction:column;gap:5px}
+  .console-grid label{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;color:var(--brand)}
+  .console-grid textarea{background:#05080f;border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--ink);font-family:inherit;font-size:13px;min-height:62px;resize:vertical}
+  [data-theme="light"] .console-grid textarea{background:#fff}
+  .console-grid .fld.full{grid-column:1/-1}
+  .live-jump{padding:5px 11px;font-size:12px;background:color-mix(in srgb,var(--good) 16%,transparent);border-color:color-mix(in srgb,var(--good) 35%,transparent)}
+  @media(max-width:880px){.console-grid{grid-template-columns:1fr}}
+
   footer{padding:60px 0 90px;text-align:center;color:var(--muted);font-size:13.5px}
   @media(max-width:880px){.stats{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.anatomy,.duel{grid-template-columns:1fr}.checklist{grid-template-columns:repeat(2,1fr)}
     .desk-grid{grid-template-columns:1fr;grid-template-areas:"sw" "gauge" "prompt" "out"}}
@@ -277,6 +294,7 @@
   <div class="brandmark"><span class="logo">AI</span> Prompt Engineering Lab</div>
   <div class="tb-actions">
     <button class="btn ghost" id="langBtn">ع / EN</button>
+    <button class="btn" id="liveTopBtn">⚡ Live AI</button>
     <button class="btn" id="themeBtn">☀ Light</button>
     <button class="btn" id="presentBtn">▶ Presenter</button>
     <button class="btn primary" onclick="window.print()">⤓ PDF</button>
@@ -311,6 +329,7 @@
   <a href="#desk">🎛 Mixing Desk</a>
   <a href="#showdown">🥊 Showdown</a>
   <a href="#hallucinate">🔍 Reviewer</a>
+  <a href="#console">🧪 Live Console</a>
   <a href="#tA">Teaching Activity</a>
   <a href="#tB">Assessment MCQs</a>
   <a href="#d1">Demo 1 · Feedback</a>
@@ -352,13 +371,6 @@
     <button class="btn" id="deskRandom">🎲 Randomize</button>
     <button class="btn" id="deskOff">✕ All off</button>
     <button class="btn" id="liveToggle" style="margin-left:auto">⚡ Live AI: off</button>
-  </div>
-  <div class="live-panel" id="livePanel" hidden>
-    <input type="password" id="dskKey" placeholder="Paste your DeepSeek API key (sk-…)" autocomplete="off" spellcheck="false">
-    <button class="btn primary" id="dskSave">Save &amp; enable</button>
-    <button class="btn" id="dskClear">Clear key</button>
-    <span class="dsk-status" id="dskStatus"></span>
-    <div class="dsk-note">🔒 Your key is stored only in <b>this browser</b> (localStorage) — it is never uploaded to the site or the GitHub repo. Calls go directly from your browser to DeepSeek. Clear it after class.</div>
   </div>
   <div class="card desk-grid">
     <div class="dk-sw" id="switches"></div>
@@ -431,7 +443,7 @@
 
 <!-- TEMPLATE A -->
 <section id="tA"><div class="wrap reveal">
-  <div class="sec-head"><span class="sec-tag">TEMPLATE A</span><h2>Active-Learning Classroom Activity</h2></div>
+  <div class="sec-head"><span class="sec-tag">TEMPLATE A</span><h2>Active-Learning Classroom Activity</h2><button class="btn live-jump" data-scn="active-learning">⚡ Run this live</button></div>
   <p class="lede">Renewable Energy Systems · Factors affecting PV efficiency · 60 min · 3rd-year EE.</p>
   <div class="card"><h3>نشاط Jigsaw + تحدّي البيانات <span class="pill">60 دقيقة</span></h3>
     <table class="ar">
@@ -447,7 +459,7 @@
 
 <!-- TEMPLATE B -->
 <section id="tB"><div class="wrap reveal">
-  <div class="sec-head"><span class="sec-tag">TEMPLATE B</span><h2>Assessment Questions — DC-DC Converters</h2></div>
+  <div class="sec-head"><span class="sec-tag">TEMPLATE B</span><h2>Assessment Questions — DC-DC Converters</h2><button class="btn live-jump" data-scn="exam-questions">⚡ Run this live</button></div>
   <p class="lede">Power Electronics · Bloom: Apply &amp; Analyze · medium difficulty · ~20 min · sample of 10 MCQs.</p>
   <div class="card"><h3>Sample MCQs <span class="pill">10 Q + Answer Key</span></h3>
     <table>
@@ -491,7 +503,7 @@
 
 <!-- DEMO 2 -->
 <section id="d2"><div class="wrap reveal">
-  <div class="sec-head"><span class="sec-tag">DEMO 2 · 3</span><h2>Five Publishable Q1 Research Ideas</h2></div>
+  <div class="sec-head"><span class="sec-tag">DEMO 2 · 3</span><h2>Five Publishable Q1 Research Ideas</h2><button class="btn live-jump" data-scn="research-ideas">⚡ Run this live</button></div>
   <p class="lede">AI in Renewable Energy — LLMs + Explainable AI for PV monitoring, fault diagnosis &amp; forecasting · MENA · 2023–2026.</p>
   <div class="note">⚠️ Per the prompt's own constraint: novelty must be verified against recent Scopus / WoS literature before submission. Journals below are <b>candidates</b> — confirm each one's current scope and quartile before submitting. No references fabricated.</div>
   <div class="card"><table>
@@ -539,6 +551,25 @@
   </table></div>
 </div></section>
 
+<!-- LIVE CONSOLE -->
+<section id="console"><div class="wrap reveal">
+  <div class="sec-head"><span class="sec-tag live">● BUILD &amp; RUN</span><h2>Live Prompt Console</h2></div>
+  <p class="lede">Assemble any prompt from the five parts and run it on a <b>real model</b>. Pick a starter or write your own — edit the boxes freely. <span class="mono" style="color:var(--muted)">Enable ⚡ Live AI (top bar) first.</span></p>
+  <div class="scn-tabs" id="consoleTabs" role="tablist" aria-label="Starter prompt"></div>
+  <div class="card">
+    <div class="console-grid" id="consoleFields"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap">
+      <button class="btn live-on" id="consoleRun">▶ Run live</button>
+      <button class="btn" id="consoleClear">Clear all</button>
+      <span class="dsk-status" id="consoleStatus"></span>
+    </div>
+    <div class="ai-out" style="margin-top:14px">
+      <div class="cap"><span id="consoleCap">AI response</span><span id="consoleBadge"></span></div>
+      <div class="body" id="consoleBody"></div>
+    </div>
+  </div>
+</div></section>
+
 <!-- TAKEAWAY -->
 <section id="takeaway"><div class="wrap reveal">
   <div class="sec-head"><span class="sec-tag">TAKEAWAY</span><h2>Keep This Card</h2></div>
@@ -561,6 +592,21 @@
   <p style="opacity:.75">2 templates + 7 demo cases executed end-to-end · bilingual AR/EN · all prompt constraints satisfied.<br>
   Literature-novelty claims flagged for verification; no references fabricated. Simulated demo failures are clearly labelled.</p>
 </div></footer>
+
+<!-- KEY MODAL (global, runtime only) -->
+<div class="keymodal" id="keyModal">
+  <div class="keybox">
+    <h3>⚡ Live AI — DeepSeek</h3>
+    <p class="dsk-note" style="flex-basis:auto">Paste your DeepSeek API key to run prompts live across the whole workshop (Mixing Desk · Showdown · Console). 🔒 Stored only in <b>this browser</b> — never uploaded to the site or the GitHub repo. Calls go straight from your browser to DeepSeek. <b>Clear it after class.</b></p>
+    <input type="password" id="dskKey" placeholder="sk-…" autocomplete="off" spellcheck="false">
+    <div class="keyrow">
+      <button class="btn primary" id="dskSave">Save &amp; enable</button>
+      <button class="btn" id="dskClear">Clear key</button>
+      <button class="btn" id="dskClose">Close</button>
+      <span class="dsk-status" id="dskStatus" style="margin-left:auto"></span>
+    </div>
+  </div>
+</div>
 
 <!-- PRESENTER OVERLAY -->
 <div class="pmode" id="pmode">
@@ -719,15 +765,24 @@ if(bar)cio.observe(bar);if(rank)cio.observe(rank);
     document.getElementById('cntA').textContent=votesA;document.getElementById('cntB').textContent=votesB;}
   function pickDuel(i){duelScn=i;votesA=0;votesB=0;renderDuel();}
   function typeInto(el,text,cb){el.textContent='';let i=0;const iv=setInterval(()=>{el.textContent+=text[i++]||'';if(i>=text.length){clearInterval(iv);cb&&cb();}},10);}
-  function reveal(){if(revealed)return;revealed=true;const s=D.playground[duelScn];
-    typeInto(document.getElementById('outA'),prose(s.weak_output).slice(0,420),()=>{
-      const c=document.getElementById('critA');c.innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--bad)">✗</span> ${t}</div>`).join('');});
-    typeInto(document.getElementById('outB'),prose(s.strong_output).slice(0,520),()=>{
-      const c=document.getElementById('critB');c.innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--good)">✓</span> ${t}</div>`).join('');
-      const won=votesB>=votesA;document.getElementById('roomVerdict').innerHTML=
-        (lang==='ar'?`الغرفة اختارت <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'ب':'أ'}</b> — والإجابة: <b style="color:var(--good)">ب</b> أقوى (سياق + مخرجات + قيود).`
-                    :`Room picked <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'B':'A'}</b> — verdict: <b style="color:var(--good)">B</b> wins (context + output + constraints).`);
-    });}
+  function showRoomVerdict(){const won=votesB>=votesA;document.getElementById('roomVerdict').innerHTML=
+    (lang==='ar'?`الغرفة اختارت <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'ب':'أ'}</b> — والإجابة: <b style="color:var(--good)">ب</b> أقوى (سياق + مخرجات + قيود).`
+                :`Room picked <b style="color:${won?'var(--good)':'var(--bad)'}">${won?'B':'A'}</b> — verdict: <b style="color:var(--good)">B</b> wins (context + output + constraints).`);}
+  function critA(){document.getElementById('critA').innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--bad)">✗</span> ${t}</div>`).join('');}
+  function critB(){document.getElementById('critB').innerHTML=(lang==='ar'?CRIT.ar:CRIT.en).map(t=>`<div class="crit"><span class="mk" style="color:var(--good)">✓</span> ${t}</div>`).join('');}
+  async function reveal(){if(revealed)return;revealed=true;const s=D.playground[duelScn];
+    const oA=document.getElementById('outA'),oB=document.getElementById('outB');
+    if(dskKey){
+      oA.innerHTML='<span class="spinner"></span>';oB.innerHTML='<span class="spinner"></span>';document.getElementById('roomVerdict').textContent='';
+      try{const strongP=PARTS.map(p=>`# ${p.en}\n${s.strong[p.k]}`).join('\n\n');
+        const [ra,rb]=await Promise.all([callDeepSeek(s.weak_prompt),callDeepSeek(strongP)]);
+        oA.innerHTML=md(ra);critA();oB.innerHTML=md(rb);critB();showRoomVerdict();
+        document.getElementById('roomVerdict').innerHTML+=' &nbsp;<span class="live-badge">● LIVE · DeepSeek</span>';
+      }catch(err){oA.textContent=prose(s.weak_output).slice(0,420);critA();oB.textContent=prose(s.strong_output).slice(0,520);critB();showRoomVerdict();}
+    } else {
+      typeInto(oA,prose(s.weak_output).slice(0,420),critA);
+      typeInto(oB,prose(s.strong_output).slice(0,520),()=>{critB();showRoomVerdict();});
+    }}
   document.getElementById('voteA').onclick=()=>{votesA++;drawTug();};
   document.getElementById('voteB').onclick=()=>{votesB++;drawTug();};
   document.getElementById('revealBtn').onclick=reveal;
@@ -791,28 +846,35 @@ if(bar)cio.observe(bar);if(rank)cio.observe(rank);
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
   function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
   let dskKey=lsGet('dsk_key');
-  const elLiveToggle=document.getElementById('liveToggle'),elPanel=document.getElementById('livePanel'),
-        elKey=document.getElementById('dskKey'),elStatus=document.getElementById('dskStatus'),elRun=document.getElementById('runLive');
+  const keyModal=document.getElementById('keyModal'),elKey=document.getElementById('dskKey'),
+        elStatus=document.getElementById('dskStatus'),elRun=document.getElementById('runLive'),
+        elLiveToggle=document.getElementById('liveToggle'),elTop=document.getElementById('liveTopBtn');
+  function openKey(){keyModal.classList.add('open');elKey.focus();}
+  function closeKey(){keyModal.classList.remove('open');}
   function updateLiveUI(){const on=!!dskKey;
-    elLiveToggle.textContent=on?'⚡ Live AI: on':'⚡ Live AI: off';
-    elLiveToggle.classList.toggle('live-on',on);
-    elRun.hidden=!on;
-    if(on){elStatus.textContent='✓ Live mode enabled';elStatus.style.color='var(--good)';}}
-  elLiveToggle.onclick=()=>{elPanel.hidden=!elPanel.hidden;if(!elPanel.hidden)elKey.focus();};
+    elTop.textContent=on?'⚡ Live: on':'⚡ Live AI';elTop.classList.toggle('live-on',on);
+    if(elLiveToggle){elLiveToggle.textContent=on?'⚡ Live AI: on':'⚡ Live AI: off';elLiveToggle.classList.toggle('live-on',on);}
+    if(elRun)elRun.hidden=!on;
+    elStatus.textContent=on?'✓ Live enabled — key stored in this browser only.':'';
+    elStatus.style.color=on?'var(--good)':'var(--muted)';
+    const cs=document.getElementById('consoleStatus');if(cs){cs.textContent=on?'':'⚡ Enable Live AI (top bar) to run.';cs.style.color='var(--muted)';}}
+  elTop.onclick=openKey; if(elLiveToggle)elLiveToggle.onclick=openKey;
+  document.getElementById('dskClose').onclick=closeKey;
+  keyModal.onclick=e=>{if(e.target===keyModal)closeKey();};
   document.getElementById('dskSave').onclick=()=>{const v=(elKey.value||'').trim();
     if(!v.startsWith('sk-')){elStatus.textContent='That does not look like a DeepSeek key (sk-…)';elStatus.style.color='var(--bad)';return;}
-    dskKey=v;lsSet('dsk_key',v);elKey.value='';elPanel.hidden=true;updateLiveUI();};
+    dskKey=v;lsSet('dsk_key',v);elKey.value='';updateLiveUI();closeKey();};
   document.getElementById('dskClear').onclick=()=>{dskKey='';lsDel('dsk_key');elKey.value='';updateLiveUI();
-    elStatus.textContent='Key cleared.';elStatus.style.color='var(--muted)';elLiveToggle.textContent='⚡ Live AI: off';elLiveToggle.classList.remove('live-on');elRun.hidden=true;elPanel.hidden=false;};
-  function buildLivePrompt(){const s=D.playground[scn];
-    return PARTS.filter(p=>state[p.k]).map(p=>`# ${p.en}\n${s.strong[p.k]}`).join('\n\n')||'(no prompt — all parts are switched off)';}
+    elStatus.textContent='Key cleared.';elStatus.style.color='var(--muted)';};
   async function callDeepSeek(prompt){
     const res=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+dskKey},
       body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:900,stream:false})});
     if(!res.ok){const t=await res.text();throw new Error('HTTP '+res.status+' '+t.slice(0,140));}
     const d=await res.json();return (d.choices&&d.choices[0]&&d.choices[0].message.content)||'(empty response)';}
-  elRun.onclick=async()=>{if(!dskKey){elPanel.hidden=false;elKey.focus();return;}
+  function buildLivePrompt(){const s=D.playground[scn];
+    return PARTS.filter(p=>state[p.k]).map(p=>`# ${p.en}\n${s.strong[p.k]}`).join('\n\n')||'(no prompt — all parts are switched off)';}
+  elRun.onclick=async()=>{if(!dskKey){openKey();return;}
     const body=document.getElementById('aiBody'),cap=document.getElementById('aiCap'),badge=document.getElementById('aiBadge');
     if(!state.task){body.innerHTML='<p style="color:var(--bad)"><b>'+(lang==='ar'?'فعّل مفتاح «المهمة» أولاً — يحتاج النموذج مهمة واضحة.':'Turn the Task switch on first — the model needs an actionable task.')+'</b></p>';return;}
     elRun.disabled=true;const offN=PARTS.filter(p=>!state[p.k]).length;
@@ -821,7 +883,41 @@ if(bar)cio.observe(bar);if(rank)cio.observe(rank);
     try{const out=await callDeepSeek(buildLivePrompt());body.innerHTML=md(out);badge.innerHTML='<span class="live-badge">● LIVE · DeepSeek</span>';}
     catch(err){body.innerHTML='<div class="deg red">'+(lang==='ar'?'فشل الاتصال الحيّ: ':'Live call failed: ')+esc(err.message)+'</div><p style="color:var(--muted)">'+(lang==='ar'?'تحقّق من المفتاح/الشبكة، أو استخدم الوضع المحاكى.':'Check the key/network, or just use simulated mode.')+'</p>';}
     finally{elRun.disabled=false;}};
-  updateLiveUI();
+
+  /* ---------- LIVE CONSOLE (build & run any prompt) ---------- */
+  let consoleScn=0;
+  function buildConsoleTabs(){const el=document.getElementById('consoleTabs');el.innerHTML='';
+    D.playground.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='scn-tab'+(i===consoleScn?' on':'');
+      b.setAttribute('role','tab');b.setAttribute('aria-selected',i===consoleScn);
+      b.textContent=lang==='ar'?s.title_ar:s.title_en;b.onclick=()=>loadConsole(i);el.appendChild(b);});}
+  function buildConsoleFields(){const wrap=document.getElementById('consoleFields');wrap.innerHTML='';
+    PARTS.forEach(p=>{const full=(p.k==='context'||p.k==='output'||p.k==='constraints')?' full':'';
+      const d=document.createElement('div');d.className='fld'+full;
+      d.innerHTML=`<label>${p.key}. ${lang==='ar'?p.ar:p.en} · ${lang==='ar'?p.en:p.ar}</label><textarea id="cf_${p.k}"></textarea>`;
+      wrap.appendChild(d);});}
+  function loadConsole(i){consoleScn=i;buildConsoleTabs();const s=D.playground[i];
+    PARTS.forEach(p=>{const t=document.getElementById('cf_'+p.k);if(t)t.value=s.strong[p.k];});}
+  function refreshConsole(){buildConsoleFields();loadConsole(consoleScn);}
+  function buildConsolePrompt(){return PARTS.map(p=>{const el=document.getElementById('cf_'+p.k);const v=el?(el.value||'').trim():'';return v?`# ${p.en}\n${v}`:'';}).filter(Boolean).join('\n\n');}
+  async function runConsole(){if(!dskKey){openKey();return;}
+    const body=document.getElementById('consoleBody'),cap=document.getElementById('consoleCap'),badge=document.getElementById('consoleBadge'),btn=document.getElementById('consoleRun');
+    const prompt=buildConsolePrompt();
+    if(!prompt){body.innerHTML='<p style="color:var(--bad)">'+(lang==='ar'?'أضف مهمة على الأقل.':'Add at least a Task.')+'</p>';return;}
+    btn.disabled=true;cap.textContent=lang==='ar'?'استجابة حيّة (DeepSeek)':'Live AI response (DeepSeek)';badge.innerHTML='';
+    body.innerHTML='<p><span class="spinner"></span>'+(lang==='ar'?'يولّد عبر DeepSeek…':'Generating with DeepSeek…')+'</p>';
+    try{const out=await callDeepSeek(prompt);body.innerHTML=md(out);badge.innerHTML='<span class="live-badge">● LIVE · DeepSeek</span>';}
+    catch(err){body.innerHTML='<div class="deg red">'+esc(err.message)+'</div>';}
+    finally{btn.disabled=false;}}
+  document.getElementById('consoleRun').onclick=runConsole;
+  document.getElementById('consoleClear').onclick=()=>{PARTS.forEach(p=>{const t=document.getElementById('cf_'+p.k);if(t)t.value='';});
+    document.getElementById('consoleBody').innerHTML='';document.getElementById('consoleBadge').innerHTML='';};
+
+  /* ---------- LIVE JUMP (static demo → console) ---------- */
+  const scnIndex={};D.playground.forEach((s,i)=>scnIndex[s.id]=i);
+  document.querySelectorAll('.live-jump').forEach(b=>{b.onclick=()=>{const i=scnIndex[b.dataset.scn];if(i==null)return;
+    loadConsole(i);document.getElementById('console').scrollIntoView();if(dskKey)runConsole();else openKey();};});
+
+  buildConsoleFields();loadConsole(0);updateLiveUI();
 
   /* ---------- ANATOMY a11y (keyboard) ---------- */
   document.querySelectorAll('.astep').forEach(s=>{s.tabIndex=0;s.setAttribute('role','button');
@@ -829,17 +925,18 @@ if(bar)cio.observe(bar);if(rank)cio.observe(rank);
 
   /* ---------- LANGUAGE ---------- */
   function applyLang(){const ar=lang==='ar';
-    ['desk','showdown','hallucinate'].forEach(id=>{const el=document.getElementById(id);el.dir=ar?'rtl':'ltr';el.lang=ar?'ar':'en';});
+    ['desk','showdown','hallucinate','console'].forEach(id=>{const el=document.getElementById(id);if(el){el.dir=ar?'rtl':'ltr';el.lang=ar?'ar':'en';}});
     pm.dir=ar?'rtl':'ltr';
     const pmTxt='▶ '+(ar?L.presenter_mode_button.ar:L.presenter_mode_button.en);
     document.getElementById('presentBtn').textContent=pmTxt;document.getElementById('presentBtn2').textContent=pmTxt;
     const cp=document.getElementById('ctaPill');if(cp)cp.textContent=ar?L.try_it_yourself_cta.ar:L.try_it_yourself_cta.en;}
-  function renderAll(){applyLang();renderDesk();renderDuel();renderHal();}
+  function renderAll(){applyLang();renderDesk();renderDuel();renderHal();refreshConsole();}
   document.getElementById('langBtn').onclick=()=>{lang=lang==='ar'?'en':'ar';
     document.getElementById('langBtn').textContent=lang==='ar'?'EN / ع':'ع / EN';renderAll();};
 
   /* ---------- GLOBAL KEYBOARD ---------- */
   addEventListener('keydown',e=>{
+    if(keyModal.classList.contains('open')){if(e.key==='Escape')closeKey();return;}
     if(pm.classList.contains('open')){
       if(['ArrowRight',' ','ArrowLeft','Escape'].includes(e.key))e.preventDefault();
       if(e.key==='ArrowRight'||e.key===' ')nav(1);
