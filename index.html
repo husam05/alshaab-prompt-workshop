@@ -141,8 +141,19 @@
   .scn-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
   .scn-tab{padding:9px 15px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;color:var(--muted)}
   .scn-tab.on{color:var(--brand);border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,transparent)}
-  .desk-tools{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px}
+  .desk-tools{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px;align-items:center}
   .desk-tools .btn{padding:7px 12px;font-size:12.5px}
+  .btn.live-on{background:linear-gradient(120deg,var(--good),var(--accent));color:#04231a;border:none}
+  .live-panel{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .live-panel input{flex:1;min-width:230px;background:#05080f;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px}
+  [data-theme="light"] .live-panel input{background:#fff}
+  .dsk-status{font-size:12.5px;font-weight:600}
+  .dsk-note{flex-basis:100%;font-size:12px;color:var(--muted);margin-top:2px}
+  .cap-right{display:flex;gap:10px;align-items:center}
+  .btn.runlive{padding:5px 12px;font-size:12px;background:linear-gradient(120deg,var(--good),var(--accent));color:#04231a;border:none}
+  .live-badge{color:var(--good);font-weight:700}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .desk-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:20px 24px;grid-template-areas:"sw gauge" "prompt out";align-items:start}
   .dk-sw{grid-area:sw}.dk-gauge{grid-area:gauge}.dk-prompt{grid-area:prompt}.dk-out{grid-area:out}
   .switch-row{display:flex;align-items:center;gap:12px;margin-bottom:6px;width:100%;text-align:left;cursor:pointer;
@@ -340,6 +351,14 @@
     <button class="btn" id="deskReset">↺ Reset (all on)</button>
     <button class="btn" id="deskRandom">🎲 Randomize</button>
     <button class="btn" id="deskOff">✕ All off</button>
+    <button class="btn" id="liveToggle" style="margin-left:auto">⚡ Live AI: off</button>
+  </div>
+  <div class="live-panel" id="livePanel" hidden>
+    <input type="password" id="dskKey" placeholder="Paste your DeepSeek API key (sk-…)" autocomplete="off" spellcheck="false">
+    <button class="btn primary" id="dskSave">Save &amp; enable</button>
+    <button class="btn" id="dskClear">Clear key</button>
+    <span class="dsk-status" id="dskStatus"></span>
+    <div class="dsk-note">🔒 Your key is stored only in <b>this browser</b> (localStorage) — it is never uploaded to the site or the GitHub repo. Calls go directly from your browser to DeepSeek. Clear it after class.</div>
   </div>
   <div class="card desk-grid">
     <div class="dk-sw" id="switches"></div>
@@ -357,7 +376,8 @@
     </div>
     <div class="dk-prompt deskprompt" id="deskPrompt"></div>
     <div class="dk-out ai-out">
-      <div class="cap"><span id="aiCap">Simulated AI response</span><span id="aiBadge"></span></div>
+      <div class="cap"><span id="aiCap">Simulated AI response</span>
+        <span class="cap-right"><button class="btn runlive" id="runLive" hidden>▶ Run live</button><span id="aiBadge"></span></span></div>
       <div class="body" id="aiBody"></div>
     </div>
   </div>
@@ -765,6 +785,43 @@ if(bar)cio.observe(bar);if(rank)cio.observe(rank);
   document.getElementById('deskReset').onclick=()=>setAll(true);
   document.getElementById('deskRandom').onclick=randomize;
   document.getElementById('deskOff').onclick=()=>setAll(false);
+
+  /* ---------- LIVE AI (DeepSeek · runtime key · never published) ---------- */
+  function lsGet(k){try{return localStorage.getItem(k)||'';}catch(e){return'';}}
+  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+  let dskKey=lsGet('dsk_key');
+  const elLiveToggle=document.getElementById('liveToggle'),elPanel=document.getElementById('livePanel'),
+        elKey=document.getElementById('dskKey'),elStatus=document.getElementById('dskStatus'),elRun=document.getElementById('runLive');
+  function updateLiveUI(){const on=!!dskKey;
+    elLiveToggle.textContent=on?'⚡ Live AI: on':'⚡ Live AI: off';
+    elLiveToggle.classList.toggle('live-on',on);
+    elRun.hidden=!on;
+    if(on){elStatus.textContent='✓ Live mode enabled';elStatus.style.color='var(--good)';}}
+  elLiveToggle.onclick=()=>{elPanel.hidden=!elPanel.hidden;if(!elPanel.hidden)elKey.focus();};
+  document.getElementById('dskSave').onclick=()=>{const v=(elKey.value||'').trim();
+    if(!v.startsWith('sk-')){elStatus.textContent='That does not look like a DeepSeek key (sk-…)';elStatus.style.color='var(--bad)';return;}
+    dskKey=v;lsSet('dsk_key',v);elKey.value='';elPanel.hidden=true;updateLiveUI();};
+  document.getElementById('dskClear').onclick=()=>{dskKey='';lsDel('dsk_key');elKey.value='';updateLiveUI();
+    elStatus.textContent='Key cleared.';elStatus.style.color='var(--muted)';elLiveToggle.textContent='⚡ Live AI: off';elLiveToggle.classList.remove('live-on');elRun.hidden=true;elPanel.hidden=false;};
+  function buildLivePrompt(){const s=D.playground[scn];
+    return PARTS.filter(p=>state[p.k]).map(p=>`# ${p.en}\n${s.strong[p.k]}`).join('\n\n')||'(no prompt — all parts are switched off)';}
+  async function callDeepSeek(prompt){
+    const res=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+dskKey},
+      body:JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:prompt}],temperature:0.7,max_tokens:900,stream:false})});
+    if(!res.ok){const t=await res.text();throw new Error('HTTP '+res.status+' '+t.slice(0,140));}
+    const d=await res.json();return (d.choices&&d.choices[0]&&d.choices[0].message.content)||'(empty response)';}
+  elRun.onclick=async()=>{if(!dskKey){elPanel.hidden=false;elKey.focus();return;}
+    const body=document.getElementById('aiBody'),cap=document.getElementById('aiCap'),badge=document.getElementById('aiBadge');
+    if(!state.task){body.innerHTML='<p style="color:var(--bad)"><b>'+(lang==='ar'?'فعّل مفتاح «المهمة» أولاً — يحتاج النموذج مهمة واضحة.':'Turn the Task switch on first — the model needs an actionable task.')+'</b></p>';return;}
+    elRun.disabled=true;const offN=PARTS.filter(p=>!state[p.k]).length;
+    cap.textContent=lang==='ar'?'استجابة حيّة (DeepSeek)':'Live AI response (DeepSeek)';badge.innerHTML='';
+    body.innerHTML='<p><span class="spinner"></span>'+(lang==='ar'?'يولّد عبر DeepSeek…':'Generating with DeepSeek…')+(offN?(' · '+offN+' '+(lang==='ar'?'عنصر مفقود':'parts off')):'')+'</p>';
+    try{const out=await callDeepSeek(buildLivePrompt());body.innerHTML=md(out);badge.innerHTML='<span class="live-badge">● LIVE · DeepSeek</span>';}
+    catch(err){body.innerHTML='<div class="deg red">'+(lang==='ar'?'فشل الاتصال الحيّ: ':'Live call failed: ')+esc(err.message)+'</div><p style="color:var(--muted)">'+(lang==='ar'?'تحقّق من المفتاح/الشبكة، أو استخدم الوضع المحاكى.':'Check the key/network, or just use simulated mode.')+'</p>';}
+    finally{elRun.disabled=false;}};
+  updateLiveUI();
 
   /* ---------- ANATOMY a11y (keyboard) ---------- */
   document.querySelectorAll('.astep').forEach(s=>{s.tabIndex=0;s.setAttribute('role','button');
